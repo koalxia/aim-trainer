@@ -1,4 +1,3 @@
-
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
 const $ = id => document.getElementById(id);
@@ -27,46 +26,63 @@ let recoil = 0;
 let flashTime = 0;
 let movementTime = 0;
 let audioContext = null;
+let hitTimeout = null;
 
 const keys = new Set();
 const targets = [];
+const targetZoneZ = -28;
+
 const clock = new THREE.Clock();
 
-// CREATE SCENE
+// -----------------------------------------------------
+// SCENE
+// -----------------------------------------------------
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x101824);
-scene.fog = new THREE.Fog(0x101824, 18, 45);
+scene.background = new THREE.Color(0xe8b27a);
+scene.fog = new THREE.Fog(0xe8b27a, 35, 110);
 
 const camera = new THREE.PerspectiveCamera(
-  76,
+  75,
   window.innerWidth / window.innerHeight,
   0.05,
-  90
+  250
 );
-
 camera.rotation.order = "YXZ";
-camera.position.set(0, 1.7, 8);
+camera.position.set(0, 1.75, 10);
 
 const renderer = new THREE.WebGLRenderer({
   antialias: true
 });
-
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 $("game").appendChild(renderer.domElement);
 
+// -----------------------------------------------------
 // LIGHTING
-scene.add(new THREE.HemisphereLight(0xabc7e0, 0x354254, 2.2));
+// -----------------------------------------------------
+const hemi = new THREE.HemisphereLight(0xfff0d8, 0xb98259, 1.8);
+scene.add(hemi);
 
-const lamp = new THREE.DirectionalLight(0xffffff, 2.2);
-lamp.position.set(0, 10, 5);
-lamp.castShadow = true;
-scene.add(lamp);
+const sun = new THREE.DirectionalLight(0xfff4d6, 2.8);
+sun.position.set(18, 28, 8);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -55;
+sun.shadow.camera.right = 55;
+sun.shadow.camera.top = 55;
+sun.shadow.camera.bottom = -55;
+sun.shadow.camera.near = 1;
+sun.shadow.camera.far = 130;
+scene.add(sun);
 
-// MATERIALS
-function material(color, metalness = 0, roughness = 0.75) {
+// -----------------------------------------------------
+// HELPERS
+// -----------------------------------------------------
+function material(color, metalness = 0, roughness = 0.8) {
   return new THREE.MeshStandardMaterial({
     color,
     metalness,
@@ -74,226 +90,315 @@ function material(color, metalness = 0, roughness = 0.75) {
   });
 }
 
-// CREATE BOX
-function box(parent, x, y, z, w, h, d, mat) {
+function addBox(parent, x, y, z, w, h, d, mat, cast = false, receive = true) {
   const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(w, h, d),
     mat
   );
-
   mesh.position.set(x, y, z);
-  mesh.receiveShadow = true;
+  mesh.castShadow = cast;
+  mesh.receiveShadow = receive;
   parent.add(mesh);
   return mesh;
 }
 
-// CREATE TRAINING RANGE
-const floorMat = material(0x253341);
-const wallMat = material(0x263443);
-const lineMat = material(0x466071);
-const trimMat = material(0x91b1be, 0.5);
-
-box(scene, 0, -0.15, -3, 26, 0.3, 34, floorMat);
-box(scene, 0, 6, -3, 26, 0.25, 34, material(0x172430));
-box(scene, 0, 3, -14, 26, 6, 0.35, wallMat);
-box(scene, -13, 3, -3, 0.35, 6, 34, wallMat);
-box(scene, 13, 3, -3, 0.35, 6, 34, wallMat);
-
-// FLOOR GRID
-for (let x = -12; x <= 12; x += 2) {
-  box(scene, x, 0.015, -3, 0.025, 0.025, 30, lineMat);
-}
-
-for (let z = -13; z <= 12; z += 2) {
-  box(scene, 0, 0.018, z, 25, 0.025, 0.025, lineMat);
-}
-
-// WALL DETAILS
-for (let x = -10; x <= 10; x += 5) {
-  box(scene, x, 3, -13.75, 0.09, 5.6, 0.1, trimMat);
-  box(scene, x, 5.65, -13, 0.65, 0.16, 0.5, material(0xb3e8ff));
-}
-
-// CREATE FIRST PERSON GUN
-const gun = new THREE.Group();
-
-camera.add(gun);
-scene.add(camera);
-
-const gunMetal = material(0x222a32, 0.75, 0.32);
-const gunBlack = material(0x11171d, 0.2, 0.55);
-const gunGrip = material(0x303a42, 0.1, 0.7);
-const gunAccent = material(0x9ca8b1, 0.8, 0.27);
-
-// PISTOL BODY
-box(gun, 0.36, -0.31, -0.65, 0.18, 0.16, 0.57, gunMetal);
-box(gun, 0.36, -0.395, -0.52, 0.16, 0.11, 0.38, gunBlack);
-
-// HANDLE
-const handle = box(
-  gun, 0.36, -0.55, -0.41,
-  0.13, 0.34, 0.15, gunGrip
-);
-
-handle.rotation.x = -0.22;
-
-// PISTOL DETAILS
-box(gun, 0.36, -0.23, -0.86, 0.08, 0.04, 0.12, gunAccent);
-box(gun, 0.36, -0.27, -0.93, 0.1, 0.09, 0.11, gunBlack);
-box(gun, 0.36, -0.43, -0.67, 0.1, 0.035, 0.12, gunAccent);
-
-// MUZZLE FLASH
-const muzzleFlash = new THREE.Mesh(
-  new THREE.ConeGeometry(0.13, 0.36, 6),
-  new THREE.MeshBasicMaterial({
-    color: 0xffdd7a,
-    transparent: true,
-    opacity: 0.9
-  })
-);
-
-muzzleFlash.rotation.x = -Math.PI / 2;
-muzzleFlash.position.set(0.36, -0.27, -1.13);
-muzzleFlash.visible = false;
-
-gun.add(muzzleFlash);
-
-// TARGET MATERIALS
-const red = material(0xf24a4e);
-const white = material(0xe2e8ed);
-const lime = material(0xc7ff35);
-const dummySkin = material(0xd8a486);
-const dummyClothes = material(0x647b91);
-
-// TARGET CIRCLE
-function circle(radius, depth, mat) {
+function addCylinder(parent, x, y, z, rt, rb, h, seg, mat, rotX = 0, rotY = 0, rotZ = 0, cast = false, receive = true) {
   const mesh = new THREE.Mesh(
-    new THREE.CylinderGeometry(radius, radius, depth, 32),
+    new THREE.CylinderGeometry(rt, rb, h, seg),
     mat
   );
-
-  mesh.rotation.x = Math.PI / 2;
+  mesh.position.set(x, y, z);
+  mesh.rotation.set(rotX, rotY, rotZ);
+  mesh.castShadow = cast;
+  mesh.receiveShadow = receive;
+  parent.add(mesh);
   return mesh;
 }
 
-// BUILD ROUND TARGET
-function buildTarget() {
+function addSphere(parent, x, y, z, r, mat, cast = false, receive = true) {
+  const mesh = new THREE.Mesh(
+    new THREE.SphereGeometry(r, 20, 16),
+    mat
+  );
+  mesh.position.set(x, y, z);
+  mesh.castShadow = cast;
+  mesh.receiveShadow = receive;
+  parent.add(mesh);
+  return mesh;
+}
+
+// -----------------------------------------------------
+// ENVIRONMENT
+// -----------------------------------------------------
+const sandMat = material(0xc9a173, 0, 1);
+const darkSandMat = material(0xae845b, 0, 1);
+const wallMat = material(0xd6b08a, 0, 1);
+const shadowWallMat = material(0xbb9671, 0, 1);
+const woodMat = material(0x7f5f43, 0.05, 0.95);
+const metalMat = material(0x555e67, 0.7, 0.35);
+const blackMetalMat = material(0x1b1f23, 0.8, 0.28);
+const concreteMat = material(0xb79a79, 0, 1);
+
+// large ground
+addBox(scene, 0, -0.2, -10, 220, 0.4, 220, sandMat, false, true);
+
+// shooting lane
+addBox(scene, 0, -0.05, -5, 18, 0.12, 72, darkSandMat, false, true);
+
+// side barriers
+addBox(scene, -9.8, 1.5, -10, 0.55, 3, 75, concreteMat);
+addBox(scene, 9.8, 1.5, -10, 0.55, 3, 75, concreteMat);
+
+// low curb
+addBox(scene, 0, 0.15, 26, 22, 0.2, 1, concreteMat);
+
+// target back wall
+addBox(scene, 0, 5.5, targetZoneZ - 2.6, 24, 11, 0.6, wallMat);
+
+// simple buildings inspired by screenshot
+function rangeBuilding(x, z, w, h, d) {
+  const g = new THREE.Group();
+  addBox(g, 0, h / 2, 0, w, h, d, shadowWallMat);
+  addBox(g, 0, h + 0.2, 0, w + 0.5, 0.35, d + 0.4, wallMat);
+
+  // cut-out windows
+  addBox(g, -w * 0.25, h * 0.55, d * 0.51, w * 0.18, h * 0.35, 0.05, material(0xe1bc95));
+  addBox(g, w * 0.12, h * 0.48, d * 0.51, w * 0.2, h * 0.28, 0.05, material(0xe1bc95));
+  addBox(g, 0.1, h * 0.28, d * 0.51, w * 0.22, h * 0.42, 0.05, material(0xe1bc95));
+
+  g.position.set(x, 0, z);
+  scene.add(g);
+}
+rangeBuilding(-20, -30, 10, 8, 8);
+rangeBuilding(19, -34, 13, 9, 10);
+rangeBuilding(27, -20, 8, 7, 7);
+rangeBuilding(-30, -15, 9, 6, 8);
+
+// crates and platforms
+function makePlatform(x, y, z, w, h, d, plankCount = 4) {
   const group = new THREE.Group();
 
-  group.add(circle(0.5, 0.11, red));
+  addBox(group, 0, 0, 0, w, h, d, concreteMat);
+  for (let i = 0; i < plankCount; i++) {
+    const px = -w / 2 + (w / plankCount) * i + (w / plankCount) / 2;
+    addBox(group, px, h / 2 + 0.06, 0, w / plankCount - 0.12, 0.08, d, woodMat);
+  }
 
-  const middle = circle(0.32, 0.13, white);
-  middle.position.z = 0.025;
-  group.add(middle);
-
-  const center = circle(0.15, 0.15, lime);
-  center.position.z = 0.05;
-  group.add(center);
-
+  group.position.set(x, y, z);
+  scene.add(group);
   return group;
 }
 
-// BUILD HUMAN-SHAPED DUMMY
-function buildDummy() {
+makePlatform(0, 0.5, targetZoneZ + 0.8, 10, 1, 4.5, 5);
+makePlatform(-7.5, 0.35, targetZoneZ + 4.5, 5.5, 0.7, 3, 4);
+makePlatform(7.5, 0.35, targetZoneZ + 4.5, 5.5, 0.7, 3, 4);
+
+function crate(x, y, z, s = 1) {
+  addBox(scene, x, y + s / 2, z, s, s, s, woodMat);
+}
+crate(-6.4, 0, targetZoneZ + 7.5, 1.2);
+crate(-5.1, 0, targetZoneZ + 7.3, 1.05);
+crate(5.7, 0, targetZoneZ + 6.9, 1.15);
+
+// poles
+for (let i = -2; i <= 2; i++) {
+  addBox(scene, i * 4.2, 1.45, targetZoneZ + 2.5, 0.09, 2.9, 0.09, metalMat, false, true);
+}
+
+// -----------------------------------------------------
+// GUN
+// -----------------------------------------------------
+const gun = new THREE.Group();
+camera.add(gun);
+scene.add(camera);
+
+const gunFrameMat = material(0x111317, 0.85, 0.32);
+const gunSlideMat = material(0x2a3138, 0.95, 0.22);
+const gunGripMat = material(0x3d312b, 0.2, 0.92);
+const gunSilverMat = material(0xb3bcc5, 1, 0.25);
+const gunSightMat = material(0x090c0f, 0.9, 0.22);
+
+// slide
+addBox(gun, 0.36, -0.19, -0.78, 0.24, 0.15, 0.88, gunSlideMat, true, true);
+// frame
+addBox(gun, 0.36, -0.30, -0.63, 0.19, 0.12, 0.52, gunFrameMat, true, true);
+// dust cover
+addBox(gun, 0.36, -0.27, -0.96, 0.16, 0.08, 0.24, gunFrameMat, true, true);
+// barrel opening
+addCylinder(gun, 0.36, -0.18, -1.23, 0.035, 0.035, 0.05, 20, gunSilverMat, Math.PI / 2, 0, 0, true);
+// grip
+const grip = addBox(gun, 0.36, -0.53, -0.47, 0.15, 0.38, 0.18, gunGripMat, true, true);
+grip.rotation.x = -0.28;
+// mag base
+addBox(gun, 0.36, -0.72, -0.43, 0.17, 0.03, 0.16, gunFrameMat, true, true);
+// trigger guard
+addCylinder(gun, 0.36, -0.41, -0.62, 0.08, 0.08, 0.03, 18, gunFrameMat, 0, 0, Math.PI / 2, true);
+addBox(gun, 0.36, -0.40, -0.59, 0.06, 0.05, 0.03, gunFrameMat, true, true);
+// trigger
+addCylinder(gun, 0.36, -0.43, -0.59, 0.015, 0.015, 0.06, 14, gunSilverMat, 0, 0, Math.PI / 2, true);
+// sights
+addBox(gun, 0.36, -0.09, -0.44, 0.08, 0.04, 0.03, gunSightMat, true, true);
+addBox(gun, 0.36, -0.09, -1.10, 0.05, 0.03, 0.04, gunSightMat, true, true);
+// slide serrations
+for (let i = 0; i < 5; i++) {
+  addBox(gun, 0.28, -0.19, -0.46 - i * 0.045, 0.01, 0.11, 0.018, gunSilverMat);
+  addBox(gun, 0.44, -0.19, -0.46 - i * 0.045, 0.01, 0.11, 0.018, gunSilverMat);
+}
+// ejection port look
+addBox(gun, 0.36, -0.16, -0.68, 0.11, 0.02, 0.14, gunSilverMat, false, true);
+
+gun.position.set(0.08, -0.02, 0.02);
+gun.rotation.set(-0.02, -0.07, 0);
+
+// muzzle flash
+const muzzleFlash = new THREE.Mesh(
+  new THREE.ConeGeometry(0.14, 0.34, 8),
+  new THREE.MeshBasicMaterial({
+    color: 0xffde91,
+    transparent: true,
+    opacity: 0.95
+  })
+);
+muzzleFlash.rotation.x = -Math.PI / 2;
+muzzleFlash.position.set(0.36, -0.18, -1.42);
+muzzleFlash.visible = false;
+gun.add(muzzleFlash);
+
+// -----------------------------------------------------
+// TARGETS / DUMMIES
+// -----------------------------------------------------
+const dummyWhiteMat = material(0xf4ebdf, 0, 1);
+const ringRedMat = material(0xd95136, 0, 0.95);
+const standMat = material(0x65492f, 0.05, 0.95);
+const baseMat = material(0x514a43, 0.25, 0.8);
+const targetGreenMat = material(0xbfdc6b, 0, 0.9);
+
+function addBullseye(parent, x, y, z, scale = 1) {
+  const ring1 = addCylinder(parent, x, y, z, 0.26 * scale, 0.26 * scale, 0.04, 32, ringRedMat, Math.PI / 2);
+  const ring2 = addCylinder(parent, x, y, z + 0.01, 0.17 * scale, 0.17 * scale, 0.042, 32, dummyWhiteMat, Math.PI / 2);
+  const ring3 = addCylinder(parent, x, y, z + 0.02, 0.11 * scale, 0.11 * scale, 0.044, 32, ringRedMat, Math.PI / 2);
+  const ring4 = addCylinder(parent, x, y, z + 0.03, 0.055 * scale, 0.055 * scale, 0.046, 32, dummyWhiteMat, Math.PI / 2);
+  const ring5 = addCylinder(parent, x, y, z + 0.04, 0.028 * scale, 0.028 * scale, 0.048, 32, ringRedMat, Math.PI / 2);
+  return [ring1, ring2, ring3, ring4, ring5];
+}
+
+function buildRoundTarget() {
   const group = new THREE.Group();
 
-  // TORSO
-  const torso = new THREE.Mesh(
-    new THREE.CapsuleGeometry(0.36, 0.65, 6, 10),
-    dummySkin
-  );
-
-  torso.position.y = 0.12;
-  group.add(torso);
-
-  // HEAD
-  const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.23, 16, 12),
-    dummySkin
-  );
-
-  head.position.y = 0.86;
-  group.add(head);
-
-  // ARMS
-  box(group, -0.43, 0.15, 0, 0.22, 0.84, 0.22, dummyClothes);
-  box(group, 0.43, 0.15, 0, 0.22, 0.84, 0.22, dummyClothes);
-
-  // LEGS
-  box(group, -0.17, -0.72, 0, 0.24, 0.9, 0.24, dummyClothes);
-  box(group, 0.17, -0.72, 0, 0.24, 0.9, 0.24, dummyClothes);
-
+  const pole1 = addBox(group, -0.18, 1.0, 0, 0.07, 2, 0.07, standMat, false, true);
+  const pole2 = addBox(group, 0.18, 1.0, 0, 0.07, 2, 0.07, standMat, false, true);
+  const topBar = addBox(group, 0, 1.97, 0, 0.5, 0.08, 0.08, standMat);
+  const plate = addCylinder(group, 0, 1.55, 0.03, 0.42, 0.42, 0.10, 40, targetGreenMat, Math.PI / 2, 0, 0, true, true);
+  addBullseye(group, 0, 1.55, 0.08, 0.9);
+  const foot = addBox(group, 0, 0.1, 0, 0.82, 0.2, 0.34, baseMat);
+  group.userData.hitPart = plate;
   return group;
 }
 
-// REMOVE EXISTING TARGETS
+function createSilhouetteShape() {
+  const shape = new THREE.Shape();
+
+  shape.moveTo(-0.44, -1.10);
+  shape.lineTo(-0.44, 0.26);
+  shape.quadraticCurveTo(-0.43, 0.66, -0.18, 0.74);
+  shape.bezierCurveTo(-0.13, 1.18, 0.13, 1.18, 0.18, 0.74);
+  shape.quadraticCurveTo(0.43, 0.66, 0.44, 0.26);
+  shape.lineTo(0.44, -1.10);
+  shape.lineTo(-0.44, -1.10);
+
+  return shape;
+}
+
+function buildSilhouetteDummy() {
+  const group = new THREE.Group();
+
+  const base = addBox(group, 0, 0.08, 0, 0.82, 0.16, 0.36, baseMat);
+  const stand = addBox(group, 0, 0.72, 0, 0.12, 1.28, 0.10, standMat);
+
+  const shape = createSilhouetteShape();
+  const geom = new THREE.ExtrudeGeometry(shape, {
+    depth: 0.10,
+    bevelEnabled: false
+  });
+
+  const board = new THREE.Mesh(geom, dummyWhiteMat);
+  board.position.set(0, 1.55, -0.05);
+  board.castShadow = true;
+  board.receiveShadow = true;
+  group.add(board);
+
+  addBullseye(group, 0, 1.55, 0.07, 1.15); // chest
+  addBullseye(group, 0, 2.36, 0.07, 0.75); // head
+
+  group.userData.hitPart = board;
+  return group;
+}
+
 function clearTargets() {
   for (const target of targets) {
     scene.remove(target);
-
     target.traverse(child => {
-      if (child.isMesh) child.geometry.dispose();
+      if (child.isMesh && child.geometry) child.geometry.dispose();
     });
   }
-
   targets.length = 0;
 }
 
-// RANDOM TARGET POSITION
-function reposition(target) {
-  target.position.x = (Math.random() - 0.5) * 14;
-
-  target.position.y = mode === "targets"
-    ? 1 + Math.random() * 3.5
-    : 1.55;
-
-  target.position.z = -10.8 - Math.random() * 1.1;
+function reposition(target, index = 0) {
+  if (mode === "targets") {
+    const lanes = [-6, 0, 6];
+    target.position.x = lanes[index % lanes.length] + (Math.random() * 1.2 - 0.6);
+    target.position.y = 0;
+    target.position.z = targetZoneZ + (Math.random() * 2 - 1.4);
+  } else {
+    const lanes = [-6, 0, 6];
+    target.position.x = lanes[index % lanes.length] + (Math.random() * 1.0 - 0.5);
+    target.position.y = 0;
+    target.position.z = targetZoneZ + (Math.random() * 2 - 0.8);
+  }
 
   target.userData.anchor = target.position.x;
   target.userData.phase = Math.random() * Math.PI * 2;
-  target.userData.speed = 0.8 + Math.random() * 0.9;
+  target.userData.speed = 0.9 + Math.random() * 0.8;
 }
 
-// SPAWN TARGETS
 function spawnTargets() {
   clearTargets();
 
-  const count = mode === "targets"
-    ? 3
-    : mode === "dummies" ? 4 : 3;
+  const count = mode === "targets" ? 3 : 3;
 
   for (let i = 0; i < count; i++) {
-    const target = mode === "targets"
-      ? buildTarget()
-      : buildDummy();
+    let t;
+    if (mode === "targets") {
+      t = buildRoundTarget();
+    } else {
+      t = buildSilhouetteDummy();
+    }
 
-    target.userData.isTarget = true;
+    t.userData.isTarget = true;
+    reposition(t, i);
 
-    reposition(target);
-    scene.add(target);
-    targets.push(target);
+    scene.add(t);
+    targets.push(t);
   }
 }
 
-// UPDATE HUD
+// -----------------------------------------------------
+// UI / HUD
+// -----------------------------------------------------
 function updateHUD() {
   $("time").textContent = timeLeft;
   $("score").textContent = String(score).padStart(4, "0");
 
-  const accuracy = shots
-    ? Math.round((hits / shots) * 100)
-    : 0;
-
+  const accuracy = shots ? Math.round((hits / shots) * 100) : 0;
   $("accuracy").textContent = accuracy + "%";
   $("hits").textContent = hits + " / " + shots;
 }
 
-// SHOW MENU SCREEN
 function showScreen(name) {
   for (const screen of screens) {
     $(screen).classList.toggle("hidden", screen !== name);
   }
-
   $("overlay").classList.remove("hidden");
   $("hud").classList.add("hidden");
 }
@@ -302,26 +407,30 @@ function lockMouse() {
   renderer.domElement.requestPointerLock();
 }
 
-// START GAME
+// -----------------------------------------------------
+// GAME CONTROL
+// -----------------------------------------------------
 function startGame(selectedMode = mode) {
   mode = selectedMode;
 
   score = 0;
   hits = 0;
   shots = 0;
-
   timeLeft = Number($("duration").value);
 
   yaw = 0;
   pitch = 0;
   recoil = 0;
+  flashTime = 0;
   movementTime = 0;
 
-  camera.position.set(0, 1.7, 8);
+  camera.position.set(0, 1.75, 10);
   camera.rotation.set(0, 0, 0);
 
-  keys.clear();
+  gun.position.set(0.08, -0.02, 0.02);
+  gun.rotation.set(-0.02, -0.07, 0);
 
+  keys.clear();
   spawnTargets();
   updateHUD();
 
@@ -334,11 +443,9 @@ function startGame(selectedMode = mode) {
   lockMouse();
 }
 
-// END GAME
 function finishGame() {
   running = false;
   paused = false;
-
   clearInterval(timer);
   keys.clear();
 
@@ -347,21 +454,17 @@ function finishGame() {
   }
 
   $("finalScore").textContent = score;
-
   $("finalAccuracy").textContent =
     (shots ? Math.round((hits / shots) * 100) : 0) + "%";
-
   $("finalHits").textContent = hits + " / " + shots;
   $("resultMode").textContent = modeNames[mode];
 
   showScreen("results");
 }
 
-// QUIT GAME
 function quitGame() {
   running = false;
   paused = false;
-
   clearInterval(timer);
   keys.clear();
 
@@ -372,72 +475,56 @@ function quitGame() {
   showScreen("home");
 }
 
-// SOUND EFFECTS
+// -----------------------------------------------------
+// SOUND
+// -----------------------------------------------------
 function playSound(hit) {
   if (!soundEnabled) return;
 
   try {
     if (!audioContext) {
-      audioContext = new (
-        window.AudioContext || window.webkitAudioContext
-      )();
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
 
-    const oscillator = audioContext.createOscillator();
+    const osc = audioContext.createOscillator();
     const gain = audioContext.createGain();
 
-    oscillator.type = hit ? "sine" : "triangle";
-
-    oscillator.frequency.setValueAtTime(
-      hit ? 740 : 140,
-      audioContext.currentTime
+    osc.type = hit ? "triangle" : "square";
+    osc.frequency.setValueAtTime(hit ? 420 : 160, audioContext.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(
+      hit ? 1200 : 80,
+      audioContext.currentTime + 0.08
     );
 
-    oscillator.frequency.exponentialRampToValueAtTime(
-      hit ? 1100 : 65,
-      audioContext.currentTime + 0.075
-    );
+    gain.gain.setValueAtTime(hit ? 0.06 : 0.04, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.12);
 
-    gain.gain.setValueAtTime(0.08, audioContext.currentTime);
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.001,
-      audioContext.currentTime + 0.11
-    );
-
-    oscillator.connect(gain);
+    osc.connect(gain);
     gain.connect(audioContext.destination);
-
-    oscillator.start();
-    oscillator.stop(audioContext.currentTime + 0.12);
+    osc.start();
+    osc.stop(audioContext.currentTime + 0.12);
   } catch (error) {
-    console.warn("Sound unavailable", error);
+    console.warn("Audio unavailable", error);
   }
 }
 
+// -----------------------------------------------------
 // SHOOTING
+// -----------------------------------------------------
 const raycaster = new THREE.Raycaster();
 const screenCenter = new THREE.Vector2(0, 0);
-let hitTimeout = null;
 
 function shoot() {
   if (!running || paused) return;
-
-  if (document.pointerLockElement !== renderer.domElement) {
-    return;
-  }
+  if (document.pointerLockElement !== renderer.domElement) return;
 
   shots++;
-
-  recoil = 0.075;
-  flashTime = 0.07;
+  recoil = 0.10;
+  flashTime = 0.06;
 
   raycaster.setFromCamera(screenCenter, camera);
 
-  const intersections = raycaster.intersectObjects(
-    targets,
-    true
-  );
+  const intersections = raycaster.intersectObjects(targets, true);
 
   let hit = false;
 
@@ -453,11 +540,10 @@ function shoot() {
       hits++;
       score += 100;
 
-      reposition(object);
+      reposition(object, targets.indexOf(object));
 
       $("hitmarker").style.opacity = "1";
       clearTimeout(hitTimeout);
-
       hitTimeout = setTimeout(() => {
         $("hitmarker").style.opacity = "0";
       }, 180);
@@ -468,13 +554,12 @@ function shoot() {
   updateHUD();
 }
 
-// MENU BUTTONS
+// -----------------------------------------------------
+// MENU EVENTS
+// -----------------------------------------------------
 $("playBtn").onclick = () => showScreen("modes");
-
 $("settingsBtn").onclick = () => showScreen("settings");
-
 $("modeBack").onclick = () => showScreen("home");
-
 $("settingsBack").onclick = () => showScreen("home");
 
 $("saveSettings").onclick = () => {
@@ -503,18 +588,18 @@ $("quitBtn").onclick = quitGame;
 $("againBtn").onclick = () => startGame(mode);
 $("homeBtn").onclick = quitGame;
 
-// POINTER LOCK AND PAUSE
+// -----------------------------------------------------
+// POINTER LOCK / PAUSE
+// -----------------------------------------------------
 document.addEventListener("pointerlockchange", () => {
   if (!running) return;
 
   if (document.pointerLockElement === renderer.domElement) {
     paused = false;
-
     $("overlay").classList.add("hidden");
     $("hud").classList.remove("hidden");
 
     clearInterval(timer);
-
     timer = setInterval(() => {
       if (!running || paused) return;
 
@@ -525,7 +610,6 @@ document.addEventListener("pointerlockchange", () => {
         finishGame();
       }
     }, 1000);
-
   } else {
     paused = true;
     clearInterval(timer);
@@ -533,30 +617,26 @@ document.addEventListener("pointerlockchange", () => {
   }
 });
 
-// MOUSE AIM
+// -----------------------------------------------------
+// INPUT
+// -----------------------------------------------------
 document.addEventListener("mousemove", event => {
   if (!running || paused) return;
+  if (document.pointerLockElement !== renderer.domElement) return;
 
-  if (document.pointerLockElement !== renderer.domElement) {
-    return;
-  }
+  yaw -= event.movementX * 0.0013 * sensitivity;
+  pitch -= event.movementY * 0.0013 * sensitivity;
 
-  yaw -= event.movementX * 0.0015 * sensitivity;
-  pitch -= event.movementY * 0.0015 * sensitivity;
-
-  pitch = THREE.MathUtils.clamp(pitch, -1.35, 1.35);
-
+  pitch = THREE.MathUtils.clamp(pitch, -1.15, 1.15);
   camera.rotation.set(pitch, yaw, 0);
 });
 
-// LEFT CLICK TO SHOOT
 document.addEventListener("mousedown", event => {
   if (event.button === 0) {
     shoot();
   }
 });
 
-// MOVEMENT CONTROLS
 document.addEventListener("keydown", event => {
   keys.add(event.code);
 
@@ -569,7 +649,9 @@ document.addEventListener("keyup", event => {
   keys.delete(event.code);
 });
 
-// ANIMATION LOOP
+// -----------------------------------------------------
+// ANIMATION
+// -----------------------------------------------------
 function animate() {
   requestAnimationFrame(animate);
 
@@ -578,65 +660,55 @@ function animate() {
   if (running && !paused) {
     movementTime += dt;
 
-    // MOVING DUMMY AI
+    // moving dummy mode
     if (mode === "moving") {
       for (const target of targets) {
         target.position.x =
           target.userData.anchor +
           Math.sin(
-            movementTime * target.userData.speed * 1.5 +
+            movementTime * target.userData.speed * 1.4 +
             target.userData.phase
-          ) * 1.8;
+          ) * 2.1;
 
-        target.position.x = THREE.MathUtils.clamp(
-          target.position.x,
-          -9,
-          9
-        );
+        target.position.x = THREE.MathUtils.clamp(target.position.x, -7.5, 7.5);
       }
     }
 
-    // PLAYER MOVEMENT
-    const direction = new THREE.Vector3();
+    // movement
+    const move = new THREE.Vector3();
 
-    if (keys.has("KeyW")) direction.z -= 1;
-    if (keys.has("KeyS")) direction.z += 1;
-    if (keys.has("KeyA")) direction.x -= 1;
-    if (keys.has("KeyD")) direction.x += 1;
+    if (keys.has("KeyW")) move.z -= 1;
+    if (keys.has("KeyS")) move.z += 1;
+    if (keys.has("KeyA")) move.x -= 1;
+    if (keys.has("KeyD")) move.x += 1;
 
-    if (direction.lengthSq() > 0) {
-      direction.normalize();
+    if (move.lengthSq() > 0) {
+      move.normalize();
+      move.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
 
-      direction.applyAxisAngle(
-        new THREE.Vector3(0, 1, 0),
-        yaw
-      );
+      const speed = keys.has("ShiftLeft") ? 7.5 : 4.6;
+      camera.position.addScaledVector(move, dt * speed);
 
-      const speed = keys.has("ShiftLeft") ? 7 : 4;
-
-      camera.position.addScaledVector(direction, dt * speed);
-
-      camera.position.x = THREE.MathUtils.clamp(
-        camera.position.x,
-        -11,
-        11
-      );
-
-      camera.position.z = THREE.MathUtils.clamp(
-        camera.position.z,
-        -1,
-        11
-      );
+      camera.position.x = THREE.MathUtils.clamp(camera.position.x, -8.5, 8.5);
+      camera.position.z = THREE.MathUtils.clamp(camera.position.z, 5.5, 18);
     }
+
+    // gun sway / bob
+    const isMoving = move.lengthSq() > 0;
+    const bob = isMoving ? Math.sin(movementTime * 9) * 0.01 : 0;
+    const sway = isMoving ? Math.cos(movementTime * 9) * 0.008 : 0;
+
+    recoil = Math.max(0, recoil - dt * 0.55);
+
+    gun.position.x = 0.08 + sway;
+    gun.position.y = -0.02 + bob - recoil * 0.40;
+    gun.position.z = 0.02 + recoil * 0.18;
+
+    gun.rotation.x = -0.02 + recoil * 1.2;
+    gun.rotation.y = -0.07 + sway * 1.5;
+    gun.rotation.z = bob * 1.4;
   }
 
-  // GUN RECOIL
-  recoil = Math.max(0, recoil - dt * 0.48);
-
-  gun.position.y = -recoil;
-  gun.rotation.x = recoil * 1.5;
-
-  // MUZZLE FLASH
   flashTime -= dt;
   muzzleFlash.visible = flashTime > 0;
 
@@ -645,13 +717,16 @@ function animate() {
 
 animate();
 
+// -----------------------------------------------------
 // RESIZE
+// -----------------------------------------------------
 window.addEventListener("resize", () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
-
   renderer.setSize(innerWidth, innerHeight);
 });
 
-// INITIAL SCREEN
+// -----------------------------------------------------
+// START SCREEN
+// -----------------------------------------------------
 showScreen("home");
