@@ -1,25 +1,40 @@
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PRECISION // ULTIMATE</title>
-<link rel="stylesheet" href="style.css?v=9">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PRECISION ULTIMATE | Build 11</title>
+  <link rel="stylesheet" href="./style.css?v=11">
 </head>
 <body>
+
 <div id="game"></div>
 
 <div id="hud" class="hidden">
   <div class="hudtop">
     <b>PRECISION <span>// ULTIMATE</span></b>
-    <div><small>TIME</small><strong id="time">60</strong></div>
-    <div><small>SCORE</small><strong id="score">0</strong></div>
-    <div><small>ACCURACY</small><strong id="accuracy">0%</strong></div>
-    <div><small>HEADSHOTS</small><strong id="heads">0</strong></div>
+    <div>
+      <small>TIME</small>
+      <strong id="time">60</strong>
+    </div>
+    <div>
+      <small>SCORE</small>
+      <strong id="score">0</strong>
+    </div>
+    <div>
+      <small>ACCURACY</small>
+      <strong id="accuracy">0%</strong>
+    </div>
+    <div>
+      <small>HEADSHOTS</small>
+      <strong id="heads">0</strong>
+    </div>
   </div>
+
   <div id="crosshair"><i></i></div>
   <div id="feedback"></div>
+
   <div id="scope" class="hidden">
     <div class="scope-circle">
       <div class="scope-h"></div>
@@ -27,123 +42,177 @@
       <div class="scope-dot"></div>
     </div>
   </div>
+
   <div class="hudbottom">
     <span id="modeLabel">STATIC TARGETS</span>
     <span id="weaponLabel">TACTICAL PISTOL · 12 / 12</span>
     <span>R RELOAD · RMB AIM · 1/2 SWITCH · ESC PAUSE</span>
   </div>
+
   <div id="damageFlash"></div>
 </div>
 
 <div id="overlay">
-<div class="frame">
-<header>
-  <div class="brand">◉ PRECISION <span>ULTIMATE</span></div>
-  <div class="online">● SYSTEM ONLINE / BUILD 9</div>
-</header>
-<main>
+  <div class="frame">
+    <header>
+      <div class="brand">
+        ◉ PRECISION <span>ULTIMATE</span>
+      </div>
+      <div class="online">
+        ● SYSTEM ONLINE / BUILD 11
+      </div>
+    </header>
 
-<section class="screen" id="home">
-  <div class="eyebrow">NEXT-GENERATION AIM TRAINING</div>
-  <h1>MAKE EVERY<br><em>SHOT COUNT.</em></h1>
-  <p>Precision. Control. Speed.<br>
-  Master your mechanics in a cinematic desert training facility.</p>
-  <div class="actions">
-    <button id="playBtn" class="primary">START TRAINING ↗</button>
-    <button id="settingsBtn" class="secondary">SETTINGS ⚙</button>
+    <main>
+
+      <section class="screen" id="home">
+        <div class="eyebrow">NEXT-GENERATION AIM TRAINING</div>
+        <h1>MAKE EVERY<br><em>SHOT COUNT.</em></h1>
+        <p>
+          Precision. Control. Speed.<br>
+          Master your mechanics in a cinematic desert training facility.
+        </p>
+
+        <div class="actions">
+          <button id="playBtn" class="primary">
+            START TRAINING ↗
+          </button>
+          <button id="settingsBtn" class="secondary">
+            SETTINGS ⚙
+          </button>
+        </div>
+
+        <div class="featureline">
+          03 TRAINING DRILLS / 02 WEAPONS / HEADSHOT TRACKING
+        </div>
+      </section>
+
+      <section class="screen hidden" id="modes">
+        <button class="back" id="modeBack">← RETURN</button>
+        <div class="eyebrow">MISSION SELECT</div>
+        <h2>CHOOSE YOUR <em>DRILL.</em></h2>
+
+        <div class="cards">
+          <button type="button" data-mode="targets" class="mode">
+            <small>01 / FLICK</small>
+            <div class="art">◎</div>
+            <h3>STATIC TARGETS</h3>
+            <p>
+              Fast target switching.
+              Hit the center for bonus points.
+            </p>
+            <b>LAUNCH DRILL ↗</b>
+          </button>
+
+          <button type="button" data-mode="dummies" class="mode">
+            <small>02 / PRECISION</small>
+            <div class="art">♟</div>
+            <h3>STATIC DUMMIES</h3>
+            <p>
+              Silhouette training with separate headshot hitboxes.
+            </p>
+            <b>LAUNCH DRILL ↗</b>
+          </button>
+
+          <button type="button" data-mode="moving" class="mode">
+            <small>03 / TRACKING</small>
+            <div class="art">⇆</div>
+            <h3>MOVING DUMMIES</h3>
+            <p>
+              Track targets strafing and switching directions.
+            </p>
+            <b>LAUNCH DRILL ↗</b>
+          </button>
+        </div>
+      </section>
+
+      <section class="screen hidden" id="settings">
+        <button class="back" id="settingsBack">← RETURN</button>
+        <div class="eyebrow">CONTROL CENTER</div>
+        <h2>SETTINGS<span class="accent">.</span></h2>
+
+        <div class="settings">
+          <label>
+            LOOK SENSITIVITY
+            <input id="sens" type="range"
+              min="0.5" max="4" step="0.1" value="1.5">
+            <output id="sensOut">1.5</output>
+          </label>
+
+          <label>
+            ROUND LENGTH
+            <select id="duration">
+              <option value="30">30 seconds</option>
+              <option value="60" selected>60 seconds</option>
+              <option value="120">120 seconds</option>
+            </select>
+          </label>
+
+          <label>
+            CROSSHAIR
+            <select id="color">
+              <option value="#ceff4b">Lime</option>
+              <option value="#ffffff">White</option>
+              <option value="#33e9ff">Cyan</option>
+              <option value="#ff5968">Red</option>
+            </select>
+          </label>
+
+          <label>
+            SOUND
+            <input id="sound" type="checkbox" checked>
+          </label>
+        </div>
+
+        <button id="saveBtn" class="primary">
+          SAVE SETTINGS ✓
+        </button>
+      </section>
+
+      <section class="screen hidden centered" id="pause">
+        <div class="eyebrow">DRILL SUSPENDED</div>
+        <h2>PAUSED<span class="accent">.</span></h2>
+        <button id="resumeBtn" class="primary">RESUME ↗</button>
+        <button id="restartBtn" class="secondary">RESTART</button>
+        <button id="quitBtn" class="secondary">MAIN MENU</button>
+      </section>
+
+      <section class="screen hidden centered" id="results">
+        <div class="eyebrow">SESSION COMPLETE</div>
+        <h2>MISSION <em>REPORT.</em></h2>
+
+        <div class="results">
+          <div>
+            SCORE
+            <strong id="finalScore">0</strong>
+          </div>
+          <div>
+            ACCURACY
+            <strong id="finalAccuracy">0%</strong>
+          </div>
+          <div>
+            HEADSHOTS
+            <strong id="finalHeads">0</strong>
+          </div>
+        </div>
+
+        <p id="finalMode"></p>
+        <button id="againBtn" class="primary">TRAIN AGAIN ↗</button>
+        <button id="homeBtn" class="secondary">MAIN MENU</button>
+      </section>
+
+    </main>
+
+    <footer>
+      PRECISION // ULTIMATE © TRAINING SYSTEM
+      <span>
+        WASD MOVE · SHIFT SPRINT · RMB ADS · R RELOAD
+      </span>
+    </footer>
   </div>
-  <div class="featureline">
-    03 TRAINING DRILLS / 02 WEAPONS / HEADSHOT TRACKING
-  </div>
-</section>
-
-<section class="screen hidden" id="modes">
-  <button class="back" id="modeBack">← RETURN</button>
-  <div class="eyebrow">MISSION SELECT</div>
-  <h2>CHOOSE YOUR <em>DRILL.</em></h2>
-  <div class="cards">
-    <button data-mode="targets" class="mode">
-      <small>01 / FLICK</small>
-      <div class="art">◎</div>
-      <h3>STATIC TARGETS</h3>
-      <p>Fast target switching. Hit the center for bonus points.</p>
-      <b>LAUNCH DRILL ↗</b>
-    </button>
-    <button data-mode="dummies" class="mode">
-      <small>02 / PRECISION</small>
-      <div class="art">♟</div>
-      <h3>STATIC DUMMIES</h3>
-      <p>Silhouette training with separate headshot hitboxes.</p>
-      <b>LAUNCH DRILL ↗</b>
-    </button>
-    <button data-mode="moving" class="mode">
-      <small>03 / TRACKING</small>
-      <div class="art">⇆</div>
-      <h3>MOVING DUMMIES</h3>
-      <p>Track targets strafing and switching directions.</p>
-      <b>LAUNCH DRILL ↗</b>
-    </button>
-  </div>
-</section>
-
-<section class="screen hidden" id="settings">
-  <button class="back" id="settingsBack">← RETURN</button>
-  <div class="eyebrow">CONTROL CENTER</div>
-  <h2>SETTINGS<span class="accent">.</span></h2>
-  <div class="settings">
-    <label>LOOK SENSITIVITY
-      <input id="sens" type="range" min="0.5" max="4" step="0.1" value="1.5">
-      <output id="sensOut">1.5</output>
-    </label>
-    <label>ROUND LENGTH
-      <select id="duration">
-        <option value="30">30 seconds</option>
-        <option value="60" selected>60 seconds</option>
-        <option value="120">120 seconds</option>
-      </select>
-    </label>
-    <label>CROSSHAIR
-      <select id="color">
-        <option value="#ceff4b">Lime</option>
-        <option value="#ffffff">White</option>
-        <option value="#33e9ff">Cyan</option>
-        <option value="#ff5968">Red</option>
-      </select>
-    </label>
-    <label>SOUND <input id="sound" type="checkbox" checked></label>
-  </div>
-  <button id="saveBtn" class="primary">SAVE SETTINGS ✓</button>
-</section>
-
-<section class="screen hidden centered" id="pause">
-  <div class="eyebrow">DRILL SUSPENDED</div>
-  <h2>PAUSED<span class="accent">.</span></h2>
-  <button id="resumeBtn" class="primary">RESUME ↗</button>
-  <button id="restartBtn" class="secondary">RESTART</button>
-  <button id="quitBtn" class="secondary">MAIN MENU</button>
-</section>
-
-<section class="screen hidden centered" id="results">
-  <div class="eyebrow">SESSION COMPLETE</div>
-  <h2>MISSION <em>REPORT.</em></h2>
-  <div class="results">
-    <div>SCORE<strong id="finalScore">0</strong></div>
-    <div>ACCURACY<strong id="finalAccuracy">0%</strong></div>
-    <div>HEADSHOTS<strong id="finalHeads">0</strong></div>
-  </div>
-  <p id="finalMode"></p>
-  <button id="againBtn" class="primary">TRAIN AGAIN ↗</button>
-  <button id="homeBtn" class="secondary">MAIN MENU</button>
-</section>
-
-</main>
-<footer>
-  PRECISION // ULTIMATE © TRAINING SYSTEM
-  <span>WASD MOVE · SHIFT SPRINT · RMB ADS · R RELOAD</span>
-</footer>
 </div>
-</div>
 
-<script type="module" src="game.js?v=9"></script>
+<script type="module" src="./game.js?v=11"></script>
+
 </body>
 </html>
