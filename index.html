@@ -2,217 +2,1362 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PRECISION ULTIMATE | Build 11</title>
-  <link rel="stylesheet" href="./style.css?v=11">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRECISION ULTIMATE — FIXED</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --lime: #ceff4b;
+  --cross: #ceff4b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #080e15;
+  color: white;
+  overflow: hidden;
+  font-family: Inter, Arial, sans-serif;
+}
+
+button, select, input { font: inherit; }
+button { cursor: pointer; }
+.hidden { display: none !important; }
+
+#game, #game canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#menu {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  overflow: auto;
+  background:
+    radial-gradient(ellipse at 78% 45%, #263d4c, transparent 55%),
+    linear-gradient(120deg, #080d15, #101c29);
+}
+
+#menu::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(#ffffff07 1px, transparent 1px),
+    linear-gradient(90deg, #ffffff07 1px, transparent 1px);
+  background-size: 65px 65px;
+}
+
+.shell {
+  max-width: 1400px;
+  min-height: 100vh;
+  margin: auto;
+  padding: 0 6%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+header, footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+header {
+  height: 85px;
+  border-bottom: 1px solid #ffffff30;
+}
+
+.logo {
+  font: 900 30px "Barlow Condensed", Impact, sans-serif;
+  letter-spacing: 2px;
+}
+
+.logo span, em, .lime { color: var(--lime); }
+
+.status, footer {
+  color: #91a3af;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+}
+
+.status { color: var(--lime); }
+
+main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.page {
+  width: 100%;
+  padding: 50px 0;
+}
+
+.eyebrow {
+  color: var(--lime);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+
+h1, h2, h3 {
+  font-family: "Barlow Condensed", Impact, sans-serif;
+  font-weight: 900;
+  line-height: .94;
+}
+
+h1 {
+  font-size: clamp(75px, 11vw, 160px);
+  margin: 25px 0;
+}
+
+h2 {
+  font-size: clamp(55px, 8vw, 105px);
+  margin: 20px 0 35px;
+}
+
+h3 { font-size: 34px; margin: 12px 0; }
+em { font-style: normal; }
+
+.subtitle {
+  color: #a8b8c5;
+  line-height: 1.9;
+}
+
+.actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 35px;
+}
+
+.primary, .secondary {
+  border-radius: 4px;
+  min-height: 54px;
+  padding: 0 32px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  transition: .2s;
+}
+
+.primary {
+  background: var(--lime);
+  color: #111911;
+  border: 1px solid var(--lime);
+}
+
+.secondary {
+  background: #ffffff10;
+  color: white;
+  border: 1px solid #667888;
+}
+
+.primary:hover, .secondary:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.15);
+}
+
+.features {
+  margin-top: 75px;
+  color: #93a3b2;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+.back {
+  background: transparent;
+  border: none;
+  color: #b9cad4;
+  margin-bottom: 25px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.card {
+  background: linear-gradient(145deg, #263b4c, #0d1621);
+  border: 1px solid #526679;
+  min-height: 340px;
+  padding: 28px;
+  text-align: left;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  transition: .2s;
+}
+
+.card:hover {
+  border-color: var(--lime);
+  transform: translateY(-6px);
+}
+
+.card small {
+  color: #b8c9d5;
+  letter-spacing: 2px;
+}
+
+.card .symbol {
+  color: var(--lime);
+  font-size: 80px;
+  margin: 15px 0;
+}
+
+.card p {
+  color: #a8b9c5;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.card b {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid #ffffff30;
+  color: var(--lime);
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+.settings {
+  max-width: 800px;
+  background: #162431;
+  border: 1px solid #495d6b;
+  margin-bottom: 25px;
+}
+
+.setting {
+  padding: 22px;
+  border-bottom: 1px solid #ffffff20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.setting:last-child { border: none; }
+
+input[type=range], input[type=checkbox] {
+  accent-color: var(--lime);
+}
+
+select {
+  background: #293e4f;
+  color: white;
+  padding: 10px;
+  border: 1px solid #708391;
+}
+
+.centered { text-align: center; }
+
+.centered .actions { justify-content: center; }
+
+.results {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 35px auto;
+  flex-wrap: wrap;
+}
+
+.results div {
+  background: #182b38;
+  border: 1px solid #536b79;
+  padding: 25px;
+  min-width: 150px;
+  font-size: 12px;
+}
+
+.results strong {
+  display: block;
+  color: var(--lime);
+  font: 900 48px "Barlow Condensed", Impact, sans-serif;
+  margin-top: 10px;
+}
+
+footer {
+  padding: 25px 0;
+  border-top: 1px solid #ffffff20;
+}
+
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.hudstats {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+}
+
+.hudstats div {
+  min-width: 105px;
+  padding: 12px;
+  background: #0a1320dc;
+  border: 1px solid #ffffff30;
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.hudstats strong {
+  display: block;
+  font: 900 29px "Barlow Condensed", Impact, sans-serif;
+  color: var(--lime);
+  margin-top: 5px;
+}
+
+#crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+}
+
+#crosshair::before, #crosshair::after {
+  content: "";
+  position: absolute;
+  background: var(--cross);
+  box-shadow: 0 0 5px black;
+}
+
+#crosshair::before {
+  width: 2px;
+  height: 20px;
+  left: 9px;
+}
+
+#crosshair::after {
+  height: 2px;
+  width: 20px;
+  top: 9px;
+}
+
+#feedback {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--lime);
+  font-weight: 900;
+  font-size: 22px;
+  opacity: 0;
+  text-shadow: 0 2px 8px black;
+}
+
+.hudbottom {
+  position: absolute;
+  bottom: 22px;
+  left: 22px;
+  right: 22px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  text-shadow: 0 2px 6px black;
+}
+
+.hudbottom span {
+  background: #08121bd9;
+  padding: 12px;
+}
+
+#scope {
+  position: absolute;
+  inset: 0;
+  background: #000e;
+  display: grid;
+  place-items: center;
+}
+
+.scopeview {
+  width: min(85vh, 85vw);
+  height: min(85vh, 85vw);
+  border: 8px solid black;
+  border-radius: 50%;
+  position: relative;
+  box-shadow: 0 0 0 100vmax #000e;
+}
+
+.scopeview::before, .scopeview::after {
+  content: "";
+  position: absolute;
+  background: #111;
+  left: 50%;
+  top: 50%;
+}
+
+.scopeview::before {
+  height: 2px;
+  width: 100%;
+  transform: translate(-50%, -50%);
+}
+
+.scopeview::after {
+  width: 2px;
+  height: 100%;
+  transform: translate(-50%, -50%);
+}
+
+#error {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 100;
+  max-width: 90%;
+  background: #901d27;
+  color: white;
+  padding: 14px;
+  display: none;
+  font-size: 13px;
+}
+
+@media(max-width:850px) {
+  .cards { grid-template-columns: 1fr; }
+  .card { min-height: 240px; }
+  .card .symbol { font-size: 45px; }
+  footer span, .hudbottom span:last-child { display: none; }
+  .hudstats div { min-width: 65px; padding: 8px; }
+}
+</style>
 </head>
+
 <body>
 
 <div id="game"></div>
 
 <div id="hud" class="hidden">
-  <div class="hudtop">
-    <b>PRECISION <span>// ULTIMATE</span></b>
-    <div>
-      <small>TIME</small>
-      <strong id="time">60</strong>
-    </div>
-    <div>
-      <small>SCORE</small>
-      <strong id="score">0</strong>
-    </div>
-    <div>
-      <small>ACCURACY</small>
-      <strong id="accuracy">0%</strong>
-    </div>
-    <div>
-      <small>HEADSHOTS</small>
-      <strong id="heads">0</strong>
-    </div>
+  <div class="hudstats">
+    <div>TIME<strong id="time">60</strong></div>
+    <div>SCORE<strong id="score">0</strong></div>
+    <div>ACCURACY<strong id="accuracy">0%</strong></div>
+    <div>HEADSHOTS<strong id="heads">0</strong></div>
   </div>
 
-  <div id="crosshair"><i></i></div>
+  <div id="crosshair"></div>
   <div id="feedback"></div>
 
   <div id="scope" class="hidden">
-    <div class="scope-circle">
-      <div class="scope-h"></div>
-      <div class="scope-v"></div>
-      <div class="scope-dot"></div>
-    </div>
+    <div class="scopeview"></div>
   </div>
 
   <div class="hudbottom">
     <span id="modeLabel">STATIC TARGETS</span>
-    <span id="weaponLabel">TACTICAL PISTOL · 12 / 12</span>
-    <span>R RELOAD · RMB AIM · 1/2 SWITCH · ESC PAUSE</span>
+    <span id="weaponLabel">PISTOL · 12/12</span>
+    <span>WASD MOVE · RIGHT CLICK AIM · R RELOAD · ESC PAUSE</span>
   </div>
-
-  <div id="damageFlash"></div>
 </div>
 
-<div id="overlay">
-  <div class="frame">
-    <header>
-      <div class="brand">
-        ◉ PRECISION <span>ULTIMATE</span>
+<div id="menu">
+<div class="shell">
+  <header>
+    <div class="logo">◉ PRECISION <span>ULTIMATE</span></div>
+    <div class="status">● SYSTEM ONLINE / BUILD 12</div>
+  </header>
+
+  <main>
+
+    <section id="home" class="page">
+      <div class="eyebrow">NEXT-GENERATION AIM TRAINING</div>
+      <h1>MAKE EVERY<br><em>SHOT COUNT.</em></h1>
+      <p class="subtitle">
+        Precision. Control. Speed.<br>
+        Master your mechanics in the ultimate desert shooting range.
+      </p>
+      <div class="actions">
+        <button class="primary" id="playBtn">START TRAINING ↗</button>
+        <button class="secondary" id="settingsBtn">SETTINGS ⚙</button>
       </div>
-      <div class="online">
-        ● SYSTEM ONLINE / BUILD 11
+      <div class="features">
+        03 TRAINING MODES / 02 WEAPONS / HEADSHOT TRACKING
       </div>
-    </header>
+    </section>
 
-    <main>
+    <section id="modes" class="page hidden">
+      <button class="back" id="modeBack">← RETURN</button>
+      <div class="eyebrow">MISSION SELECT</div>
+      <h2>CHOOSE YOUR <em>DRILL.</em></h2>
 
-      <section class="screen" id="home">
-        <div class="eyebrow">NEXT-GENERATION AIM TRAINING</div>
-        <h1>MAKE EVERY<br><em>SHOT COUNT.</em></h1>
-        <p>
-          Precision. Control. Speed.<br>
-          Master your mechanics in a cinematic desert training facility.
-        </p>
-
-        <div class="actions">
-          <button id="playBtn" class="primary">
-            START TRAINING ↗
-          </button>
-          <button id="settingsBtn" class="secondary">
-            SETTINGS ⚙
-          </button>
-        </div>
-
-        <div class="featureline">
-          03 TRAINING DRILLS / 02 WEAPONS / HEADSHOT TRACKING
-        </div>
-      </section>
-
-      <section class="screen hidden" id="modes">
-        <button class="back" id="modeBack">← RETURN</button>
-        <div class="eyebrow">MISSION SELECT</div>
-        <h2>CHOOSE YOUR <em>DRILL.</em></h2>
-
-        <div class="cards">
-          <button type="button" data-mode="targets" class="mode">
-            <small>01 / FLICK</small>
-            <div class="art">◎</div>
-            <h3>STATIC TARGETS</h3>
-            <p>
-              Fast target switching.
-              Hit the center for bonus points.
-            </p>
-            <b>LAUNCH DRILL ↗</b>
-          </button>
-
-          <button type="button" data-mode="dummies" class="mode">
-            <small>02 / PRECISION</small>
-            <div class="art">♟</div>
-            <h3>STATIC DUMMIES</h3>
-            <p>
-              Silhouette training with separate headshot hitboxes.
-            </p>
-            <b>LAUNCH DRILL ↗</b>
-          </button>
-
-          <button type="button" data-mode="moving" class="mode">
-            <small>03 / TRACKING</small>
-            <div class="art">⇆</div>
-            <h3>MOVING DUMMIES</h3>
-            <p>
-              Track targets strafing and switching directions.
-            </p>
-            <b>LAUNCH DRILL ↗</b>
-          </button>
-        </div>
-      </section>
-
-      <section class="screen hidden" id="settings">
-        <button class="back" id="settingsBack">← RETURN</button>
-        <div class="eyebrow">CONTROL CENTER</div>
-        <h2>SETTINGS<span class="accent">.</span></h2>
-
-        <div class="settings">
-          <label>
-            LOOK SENSITIVITY
-            <input id="sens" type="range"
-              min="0.5" max="4" step="0.1" value="1.5">
-            <output id="sensOut">1.5</output>
-          </label>
-
-          <label>
-            ROUND LENGTH
-            <select id="duration">
-              <option value="30">30 seconds</option>
-              <option value="60" selected>60 seconds</option>
-              <option value="120">120 seconds</option>
-            </select>
-          </label>
-
-          <label>
-            CROSSHAIR
-            <select id="color">
-              <option value="#ceff4b">Lime</option>
-              <option value="#ffffff">White</option>
-              <option value="#33e9ff">Cyan</option>
-              <option value="#ff5968">Red</option>
-            </select>
-          </label>
-
-          <label>
-            SOUND
-            <input id="sound" type="checkbox" checked>
-          </label>
-        </div>
-
-        <button id="saveBtn" class="primary">
-          SAVE SETTINGS ✓
+      <div class="cards">
+        <button class="card" data-mode="targets">
+          <small>01 / FLICK</small>
+          <div class="symbol">◎</div>
+          <h3>STATIC TARGETS</h3>
+          <p>Practice flicking between red and white targets.</p>
+          <b>LAUNCH DRILL ↗</b>
         </button>
-      </section>
 
-      <section class="screen hidden centered" id="pause">
-        <div class="eyebrow">DRILL SUSPENDED</div>
-        <h2>PAUSED<span class="accent">.</span></h2>
+        <button class="card" data-mode="dummies">
+          <small>02 / PRECISION</small>
+          <div class="symbol">♟</div>
+          <h3>STATIC DUMMIES</h3>
+          <p>Shoot silhouette dummies with headshot scoring.</p>
+          <b>LAUNCH DRILL ↗</b>
+        </button>
+
+        <button class="card" data-mode="moving">
+          <small>03 / TRACKING</small>
+          <div class="symbol">⇆</div>
+          <h3>MOVING DUMMIES</h3>
+          <p>Track dummies strafing side to side.</p>
+          <b>LAUNCH DRILL ↗</b>
+        </button>
+      </div>
+    </section>
+
+    <section id="settings" class="page hidden">
+      <button class="back" id="settingsBack">← RETURN</button>
+      <div class="eyebrow">CONTROL CENTER</div>
+      <h2>SETTINGS<span class="lime">.</span></h2>
+
+      <div class="settings">
+        <div class="setting">
+          <b>MOUSE SENSITIVITY</b>
+          <input id="sensitivity" type="range"
+            min="0.5" max="4" value="1.5" step="0.1">
+          <span id="sensValue">1.5</span>
+        </div>
+
+        <div class="setting">
+          <b>ROUND LENGTH</b>
+          <select id="duration">
+            <option value="30">30 SECONDS</option>
+            <option value="60" selected>60 SECONDS</option>
+            <option value="120">120 SECONDS</option>
+          </select>
+        </div>
+
+        <div class="setting">
+          <b>CROSSHAIR COLOR</b>
+          <select id="color">
+            <option value="#ceff4b">LIME</option>
+            <option value="#ffffff">WHITE</option>
+            <option value="#00e5ff">CYAN</option>
+            <option value="#ff4455">RED</option>
+          </select>
+        </div>
+
+        <div class="setting">
+          <b>SOUNDS</b>
+          <input id="sounds" type="checkbox" checked>
+        </div>
+      </div>
+
+      <button id="saveBtn" class="primary">SAVE SETTINGS ✓</button>
+    </section>
+
+    <section id="pause" class="page centered hidden">
+      <div class="eyebrow">TRAINING INTERRUPTED</div>
+      <h2>PAUSED<span class="lime">.</span></h2>
+      <div class="actions">
         <button id="resumeBtn" class="primary">RESUME ↗</button>
         <button id="restartBtn" class="secondary">RESTART</button>
         <button id="quitBtn" class="secondary">MAIN MENU</button>
-      </section>
+      </div>
+    </section>
 
-      <section class="screen hidden centered" id="results">
-        <div class="eyebrow">SESSION COMPLETE</div>
-        <h2>MISSION <em>REPORT.</em></h2>
+    <section id="results" class="page centered hidden">
+      <div class="eyebrow">SESSION COMPLETE</div>
+      <h2>MISSION <em>REPORT.</em></h2>
 
-        <div class="results">
-          <div>
-            SCORE
-            <strong id="finalScore">0</strong>
-          </div>
-          <div>
-            ACCURACY
-            <strong id="finalAccuracy">0%</strong>
-          </div>
-          <div>
-            HEADSHOTS
-            <strong id="finalHeads">0</strong>
-          </div>
-        </div>
+      <div class="results">
+        <div>SCORE<strong id="finalScore">0</strong></div>
+        <div>ACCURACY<strong id="finalAccuracy">0%</strong></div>
+        <div>HEADSHOTS<strong id="finalHeads">0</strong></div>
+      </div>
 
-        <p id="finalMode"></p>
+      <div class="actions">
         <button id="againBtn" class="primary">TRAIN AGAIN ↗</button>
         <button id="homeBtn" class="secondary">MAIN MENU</button>
-      </section>
+      </div>
+    </section>
 
-    </main>
+  </main>
 
-    <footer>
-      PRECISION // ULTIMATE © TRAINING SYSTEM
-      <span>
-        WASD MOVE · SHIFT SPRINT · RMB ADS · R RELOAD
-      </span>
-    </footer>
-  </div>
+  <footer>
+    PRECISION ULTIMATE // BUILD 12
+    <span>WASD · MOUSE · RIGHT CLICK ADS · 1/2 WEAPONS</span>
+  </footer>
+</div>
 </div>
 
-<script type="module" src="./game.js?v=11"></script>
+<div id="error"></div>
 
+<script>
+window.addEventListener("error", function(e) {
+  const error = document.getElementById("error");
+  error.textContent = "GAME ERROR: " + e.message;
+  error.style.display = "block";
+});
+
+window.addEventListener("unhandledrejection", function(e) {
+  const error = document.getElementById("error");
+  error.textContent = "GAME ERROR: " + String(e.reason);
+  error.style.display = "block";
+});
+</script>
+
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+
+const $ = id => document.getElementById(id);
+const keys = new Set();
+const clock = new THREE.Clock();
+const targets = [];
+
+const names = {
+  targets: "STATIC TARGETS",
+  dummies: "STATIC DUMMIES",
+  moving: "MOVING DUMMIES"
+};
+
+let mode = "targets";
+let playing = false;
+let paused = false;
+let seconds = 60;
+let score = 0;
+let shots = 0;
+let hits = 0;
+let heads = 0;
+let sensitivity = 1.5;
+let soundEnabled = true;
+let yaw = 0;
+let pitch = 0;
+let weapon = 0;
+let ammo = 12;
+let reloading = false;
+let aiming = false;
+let recoil = 0;
+let flash = 0;
+let totalTime = 0;
+let roundTimer = null;
+let reloadTimer = null;
+let mouseLockedOnce = false;
+let audio = null;
+
+// 3D WORLD
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xe6b480);
+scene.fog = new THREE.Fog(0xd7a878, 35, 150);
+
+const camera = new THREE.PerspectiveCamera(
+  75, innerWidth / innerHeight, 0.05, 300
+);
+camera.position.set(0, 1.75, 9);
+camera.rotation.order = "YXZ";
+
+const renderer = new THREE.WebGLRenderer({
+  antialias: true
+});
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.3;
+
+$("game").appendChild(renderer.domElement);
+
+// LIGHTING
+scene.add(new THREE.HemisphereLight(0xffe9c4, 0x826047, 2.4));
+
+const sun = new THREE.DirectionalLight(0xffeccc, 3.2);
+sun.position.set(-20, 30, 15);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -50;
+sun.shadow.camera.right = 50;
+sun.shadow.camera.top = 50;
+sun.shadow.camera.bottom = -50;
+scene.add(sun);
+
+// MATERIALS
+const material = (color, metalness = 0, roughness = 0.8) =>
+  new THREE.MeshStandardMaterial({color, metalness, roughness});
+
+const sand = material(0xc59a69);
+const tan = material(0xd8ad7e);
+const plaster = material(0xb68f6c);
+const wood = material(0x745137);
+const white = material(0xeee7d9);
+const red = material(0xcf4935);
+const gunmetal = material(0x292f35, 0.85, 0.3);
+const black = material(0x111519, 0.7, 0.4);
+
+function box(parent,x,y,z,w,h,d,mat) {
+  const mesh = new THREE.Mesh(
+    new THREE.BoxGeometry(w,h,d),mat
+  );
+  mesh.position.set(x,y,z);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  parent.add(mesh);
+  return mesh;
+}
+
+function disc(parent,x,y,z,r,mat,zone="body") {
+  const mesh = new THREE.Mesh(
+    new THREE.CylinderGeometry(r,r,.025,40),mat
+  );
+  mesh.rotation.x = Math.PI/2;
+  mesh.position.set(x,y,z);
+  mesh.castShadow = true;
+  mesh.userData.zone = zone;
+  parent.add(mesh);
+  return mesh;
+}
+
+function rings(group,x,y,z,size,zone) {
+  [
+    [0.35,red],
+    [0.25,white],
+    [0.16,red],
+    [0.085,white],
+    [0.035,red]
+  ].forEach(([radius,mat],i)=>{
+    disc(group,x,y,z+i*.025,radius*size,mat,zone);
+  });
+}
+
+// DESERT ENVIRONMENT
+box(scene,0,-.3,-15,200,.6,200,sand);
+box(scene,0,-.03,-15,23,.06,100,material(0xb88c5d));
+
+function building(x,z,w,h,d) {
+  const group = new THREE.Group();
+
+  box(group,0,h/2,0,w,h,d,plaster);
+  box(group,0,h+.15,0,w+.5,.3,d+.5,tan);
+
+  for(let i=-1;i<=1;i++) {
+    box(group,i*w*.27,h*.65,d/2+.07,w*.14,h*.33,.1,
+      material(0x604d3b));
+  }
+
+  group.position.set(x,0,z);
+  scene.add(group);
+}
+
+building(-20,-33,15,10,11);
+building(21,-37,18,12,13);
+building(-27,-14,12,7,10);
+building(28,-20,13,8,12);
+
+box(scene,0,3,-47,38,6,.6,plaster);
+
+for(const side of [-1,1]) {
+  box(scene,side*13,1.3,-13,.6,2.6,85,tan);
+}
+
+function platform(x,z,w) {
+  box(scene,x,.3,z,w,.6,3.4,plaster);
+
+  for(let i=0;i<6;i++) {
+    box(scene,x-w/2+(i+.5)*w/6,.65,z,
+      w/6-.06,.1,3.2,wood);
+  }
+}
+
+platform(-7,-29,5);
+platform(0,-33,7);
+platform(7,-29,5);
+
+// PRACTICE TARGETS
+function roundTarget() {
+  const group=new THREE.Group();
+
+  box(group,0,.12,0,.9,.24,.45,wood);
+  box(group,-.28,1,0,.08,2,.1,wood);
+  box(group,.28,1,0,.08,2,.1,wood);
+
+  rings(group,0,1.65,.1,1.6,"body");
+  group.userData.isTarget=true;
+  return group;
+}
+
+function dummyTarget() {
+  const group=new THREE.Group();
+
+  box(group,0,.1,0,.9,.2,.42,wood);
+  box(group,-.28,.9,0,.08,1.6,.1,wood);
+  box(group,.28,.9,0,.08,1.6,.1,wood);
+
+  const shape=new THREE.Shape();
+  shape.moveTo(-.47,0);
+  shape.lineTo(.47,0);
+  shape.lineTo(.47,1.16);
+  shape.quadraticCurveTo(.42,1.43,.23,1.5);
+  shape.lineTo(.23,1.64);
+  shape.quadraticCurveTo(.27,2.13,0,2.13);
+  shape.quadraticCurveTo(-.27,2.13,-.23,1.64);
+  shape.lineTo(-.23,1.5);
+  shape.quadraticCurveTo(-.42,1.43,-.47,1.16);
+  shape.closePath();
+
+  const board=new THREE.Mesh(
+    new THREE.ExtrudeGeometry(shape,{
+      depth:.08,
+      bevelEnabled:true,
+      bevelThickness:.01,
+      bevelSize:.01,
+      bevelSegments:1
+    }),white
+  );
+  board.position.y=.42;
+  board.castShadow=true;
+  board.userData.zone="body";
+  group.add(board);
+
+  rings(group,0,1.43,.16,1.15,"body");
+  rings(group,0,2.29,.16,.6,"head");
+
+  group.userData.isTarget=true;
+  return group;
+}
+
+function moveTarget(target,index) {
+  const lanes=[-7,0,7];
+  target.position.set(
+    lanes[index%3]+(Math.random()-.5)*.6,
+    0,
+    -28-(index%2)*4
+  );
+  target.userData.anchor=target.position.x;
+  target.userData.phase=Math.random()*Math.PI*2;
+  target.userData.speed=.8+Math.random()*.7;
+}
+
+function spawnTargets() {
+  targets.forEach(t=>scene.remove(t));
+  targets.length=0;
+
+  for(let i=0;i<3;i++) {
+    const target=mode==="targets"
+      ?roundTarget():dummyTarget();
+
+    moveTarget(target,i);
+    scene.add(target);
+    targets.push(target);
+  }
+}
+
+// VISIBLE FIRST PERSON WEAPONS
+const gun=new THREE.Group();
+camera.add(gun);
+scene.add(camera);
+
+const pistol=new THREE.Group();
+gun.add(pistol);
+
+const slide=material(0x343b42,.95,.25);
+const grip=material(0x252b30,.1,.85);
+const silver=material(0xabb3bb,.9,.24);
+
+box(pistol,.32,-.28,-.8,.24,.17,.9,slide);
+box(pistol,.32,-.39,-.57,.2,.13,.52,gunmetal);
+
+const handle=box(pistol,.32,-.62,-.44,
+  .17,.4,.21,grip);
+handle.rotation.x=-.25;
+
+box(pistol,.32,-.81,-.42,.19,.035,.2,black);
+box(pistol,.32,-.18,-1.13,.06,.04,.05,black);
+box(pistol,.32,-.21,-.43,.08,.05,.05,black);
+
+for(let i=0;i<7;i++) {
+  box(pistol,.19,-.28,-.42-i*.05,
+    .01,.12,.013,black);
+  box(pistol,.45,-.28,-.42-i*.05,
+    .01,.12,.013,black);
+}
+
+box(pistol,.32,-.27,-.75,.12,.02,.18,silver);
+box(pistol,.32,-.46,-.65,.14,.03,.24,gunmetal);
+
+const sniper=new THREE.Group();
+gun.add(sniper);
+sniper.visible=false;
+
+box(sniper,.3,-.29,-1.1,.22,.2,1.3,gunmetal);
+box(sniper,.3,-.42,-.35,.2,.2,.8,grip);
+box(sniper,.3,-.65,-.73,.16,.4,.2,grip);
+
+const barrel=new THREE.Mesh(
+  new THREE.CylinderGeometry(.055,.055,1.55,24),
+  gunmetal
+);
+barrel.rotation.x=Math.PI/2;
+barrel.position.set(.3,-.25,-2.03);
+sniper.add(barrel);
+
+const optic=new THREE.Mesh(
+  new THREE.CylinderGeometry(.12,.12,.7,24),
+  black
+);
+optic.rotation.x=Math.PI/2;
+optic.position.set(.3,-.03,-1);
+sniper.add(optic);
+
+box(sniper,.3,-.14,-1,.1,.12,.25,gunmetal);
+
+const muzzle=new THREE.Mesh(
+  new THREE.ConeGeometry(.13,.4,8),
+  new THREE.MeshBasicMaterial({color:0xffdc82})
+);
+muzzle.rotation.x=-Math.PI/2;
+gun.add(muzzle);
+muzzle.visible=false;
+
+const muzzleLight=new THREE.PointLight(0xffaa55,0,5);
+gun.add(muzzleLight);
+
+// UI
+function showPage(name) {
+  ["home","modes","settings","pause","results"].forEach(id=>{
+    $(id).classList.toggle("hidden",id!==name);
+  });
+  $("menu").classList.remove("hidden");
+  $("hud").classList.add("hidden");
+}
+
+function showGame() {
+  $("menu").classList.add("hidden");
+  $("hud").classList.remove("hidden");
+}
+
+function hud() {
+  $("time").textContent=seconds;
+  $("score").textContent=score;
+  $("accuracy").textContent=
+    (shots?Math.round(hits/shots*100):0)+"%";
+  $("heads").textContent=heads;
+  $("modeLabel").textContent=names[mode];
+  $("weaponLabel").textContent=
+    (weapon?"SCOUT SNIPER":"TACTICAL PISTOL")+
+    " · "+(reloading?"RELOADING":ammo+"/"+(weapon?5:12));
+}
+
+function setWeapon(n) {
+  weapon=n;
+  ammo=n?5:12;
+  reloading=false;
+  clearTimeout(reloadTimer);
+  pistol.visible=!n;
+  sniper.visible=!!n;
+  aiming=false;
+  camera.fov=75;
+  camera.updateProjectionMatrix();
+  $("scope").classList.add("hidden");
+  $("crosshair").classList.remove("hidden");
+  hud();
+}
+
+function requestMouse() {
+  if(!renderer.domElement.requestPointerLock) return;
+
+  try {
+    const result=renderer.domElement.requestPointerLock();
+    if(result && typeof result.catch==="function") {
+      result.catch(error=>{
+        console.warn("Mouse lock:",error);
+      });
+    }
+  } catch(error) {
+    console.warn(error);
+  }
+}
+
+function startGame(selected) {
+  mode=selected;
+  playing=true;
+  paused=false;
+  seconds=Number($("duration").value);
+  score=shots=hits=heads=0;
+  yaw=pitch=recoil=totalTime=0;
+  keys.clear();
+
+  camera.position.set(0,1.75,9);
+  camera.rotation.set(0,0,0);
+
+  setWeapon(0);
+  spawnTargets();
+  hud();
+
+  // ALWAYS OPEN GAME BEFORE MOUSE LOCK
+  showGame();
+
+  clearInterval(roundTimer);
+  roundTimer=setInterval(()=>{
+    if(!playing||paused) return;
+    seconds--;
+    hud();
+    if(seconds<=0) finish();
+  },1000);
+
+  requestMouse();
+}
+
+function pause() {
+  if(!playing||paused) return;
+  paused=true;
+  aiming=false;
+  camera.fov=75;
+  camera.updateProjectionMatrix();
+  $("scope").classList.add("hidden");
+  showPage("pause");
+}
+
+function finish() {
+  playing=false;
+  paused=false;
+  clearInterval(roundTimer);
+  clearTimeout(reloadTimer);
+
+  if(document.pointerLockElement===renderer.domElement) {
+    document.exitPointerLock();
+  }
+
+  $("finalScore").textContent=score;
+  $("finalAccuracy").textContent=
+    (shots?Math.round(hits/shots*100):0)+"%";
+  $("finalHeads").textContent=heads;
+
+  showPage("results");
+}
+
+function quit() {
+  playing=false;
+  paused=false;
+  clearInterval(roundTimer);
+  clearTimeout(reloadTimer);
+  keys.clear();
+
+  if(document.pointerLockElement===renderer.domElement) {
+    document.exitPointerLock();
+  }
+  showPage("home");
+}
+
+function reload() {
+  if(!playing||paused||reloading) return;
+  reloading=true;
+  hud();
+
+  reloadTimer=setTimeout(()=>{
+    ammo=weapon?5:12;
+    reloading=false;
+    hud();
+  },weapon?1400:900);
+}
+
+function aimDown(on) {
+  if(!playing||paused) return;
+  aiming=on;
+
+  camera.fov=on?(weapon?18:53):75;
+  camera.updateProjectionMatrix();
+
+  $("scope").classList.toggle(
+    "hidden",!(on&&weapon===1)
+  );
+  $("crosshair").classList.toggle(
+    "hidden",on&&weapon===1
+  );
+}
+
+function playSound(frequency) {
+  if(!soundEnabled) return;
+
+  try {
+    if(!audio) audio=new AudioContext();
+    const osc=audio.createOscillator();
+    const gain=audio.createGain();
+
+    osc.type="triangle";
+    osc.frequency.setValueAtTime(frequency,audio.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(
+      frequency*.4,audio.currentTime+.12
+    );
+
+    gain.gain.setValueAtTime(.07,audio.currentTime);
+    gain.gain.exponentialRampToValueAtTime(
+      .001,audio.currentTime+.12
+    );
+
+    osc.connect(gain);
+    gain.connect(audio.destination);
+    osc.start();
+    osc.stop(audio.currentTime+.12);
+  } catch(e) {}
+}
+
+let feedbackTimeout;
+function feedback(message) {
+  $("feedback").textContent=message;
+  $("feedback").style.opacity="1";
+  clearTimeout(feedbackTimeout);
+  feedbackTimeout=setTimeout(()=>{
+    $("feedback").style.opacity="0";
+  },230);
+}
+
+const ray=new THREE.Raycaster();
+
+function shoot() {
+  if(!playing||paused||reloading) return;
+  if(document.pointerLockElement!==renderer.domElement) return;
+
+  if(ammo<=0) {
+    reload();
+    return;
+  }
+
+  ammo--;
+  shots++;
+  recoil=weapon?.25:.15;
+  flash=weapon?.13:.08;
+
+  playSound(weapon?90:155);
+
+  ray.setFromCamera(new THREE.Vector2(0,0),camera);
+  ray.far=180;
+
+  const intersections=ray.intersectObjects(targets,true);
+
+  if(intersections.length) {
+    const hitObject=intersections[0].object;
+    let parent=hitObject;
+
+    while(parent.parent&&!parent.userData.isTarget) {
+      parent=parent.parent;
+    }
+
+    if(parent.userData.isTarget) {
+      hits++;
+
+      if(hitObject.userData.zone==="head"&&mode!=="targets") {
+        heads++;
+        score+=250;
+        feedback("HEADSHOT +250");
+      } else {
+        score+=100;
+        feedback("HIT +100");
+      }
+
+      playSound(800);
+      moveTarget(parent,targets.indexOf(parent));
+    }
+  }
+
+  hud();
+  if(ammo<=0) reload();
+}
+
+// MENUS — BUTTONS WORK WITHOUT OLD GAME.JS
+$("playBtn").onclick=()=>showPage("modes");
+$("settingsBtn").onclick=()=>showPage("settings");
+$("modeBack").onclick=()=>showPage("home");
+$("settingsBack").onclick=()=>showPage("home");
+
+$("sensitivity").oninput=()=>{
+  $("sensValue").textContent=$("sensitivity").value;
+};
+
+$("saveBtn").onclick=()=>{
+  sensitivity=Number($("sensitivity").value);
+  soundEnabled=$("sounds").checked;
+
+  document.documentElement.style.setProperty(
+    "--cross",$("color").value
+  );
+
+  showPage("home");
+};
+
+document.querySelectorAll(".card").forEach(button=>{
+  button.addEventListener("click",()=>{
+    startGame(button.dataset.mode);
+  });
+});
+
+$("resumeBtn").onclick=()=>{
+  paused=false;
+  showGame();
+  requestMouse();
+};
+
+$("restartBtn").onclick=()=>startGame(mode);
+$("quitBtn").onclick=quit;
+$("againBtn").onclick=()=>startGame(mode);
+$("homeBtn").onclick=quit;
+
+// POINTER LOCK
+document.addEventListener("pointerlockchange",()=>{
+  const locked=document.pointerLockElement===renderer.domElement;
+
+  if(locked) {
+    mouseLockedOnce=true;
+    if(playing) {
+      paused=false;
+      showGame();
+    }
+  } else if(playing&&!paused&&mouseLockedOnce) {
+    pause();
+  }
+});
+
+// MOUSE
+document.addEventListener("mousemove",event=>{
+  if(!playing||paused) return;
+  if(document.pointerLockElement!==renderer.domElement) return;
+
+  const speed=sensitivity*.0014*(aiming?.55:1);
+  yaw-=event.movementX*speed;
+  pitch-=event.movementY*speed;
+  pitch=THREE.MathUtils.clamp(pitch,-1.3,1.3);
+  camera.rotation.set(pitch,yaw,0);
+});
+
+document.addEventListener("mousedown",event=>{
+  if(event.button===0) shoot();
+  if(event.button===2) aimDown(true);
+});
+
+document.addEventListener("mouseup",event=>{
+  if(event.button===2) aimDown(false);
+});
+
+document.addEventListener("contextmenu",event=>{
+  event.preventDefault();
+});
+
+document.addEventListener("keydown",event=>{
+  keys.add(event.code);
+
+  if(!playing||paused||event.repeat) return;
+
+  if(event.code==="KeyR") reload();
+  if(event.code==="Digit1") setWeapon(0);
+  if(event.code==="Digit2") setWeapon(1);
+
+  if(event.code==="Escape" &&
+     document.pointerLockElement!==renderer.domElement) {
+    pause();
+  }
+});
+
+document.addEventListener("keyup",event=>{
+  keys.delete(event.code);
+});
+
+window.addEventListener("blur",()=>{
+  keys.clear();
+});
+
+// GAME LOOP
+function animate() {
+  requestAnimationFrame(animate);
+  const dt=Math.min(clock.getDelta(),.05);
+
+  if(playing&&!paused) {
+    totalTime+=dt;
+
+    if(mode==="moving") {
+      targets.forEach(t=>{
+        t.position.x=THREE.MathUtils.clamp(
+          t.userData.anchor+
+          Math.sin(
+            totalTime*t.userData.speed*1.7+
+            t.userData.phase
+          )*2.1,
+          -9,9
+        );
+      });
+    }
+
+    const direction=new THREE.Vector3();
+
+    if(keys.has("KeyW")) direction.z--;
+    if(keys.has("KeyS")) direction.z++;
+    if(keys.has("KeyA")) direction.x--;
+    if(keys.has("KeyD")) direction.x++;
+
+    if(direction.lengthSq()) {
+      direction.normalize();
+      direction.applyAxisAngle(
+        new THREE.Vector3(0,1,0),yaw
+      );
+
+      const speed=keys.has("ShiftLeft")?7:4.5;
+      camera.position.addScaledVector(direction,dt*speed);
+
+      camera.position.x=THREE.MathUtils.clamp(
+        camera.position.x,-9,9
+      );
+
+      camera.position.z=THREE.MathUtils.clamp(
+        camera.position.z,5,20
+      );
+    }
+
+    const bob=direction.lengthSq()
+      ?Math.sin(totalTime*10)*.012:0;
+
+    recoil=Math.max(0,recoil-dt*.8);
+
+    gun.position.x=aiming?-.12:.03;
+    gun.position.y=bob-recoil*.35;
+    gun.position.z=aiming?-.1:0;
+    gun.rotation.x=recoil*1.2;
+
+    gun.visible=!(aiming&&weapon===1);
+  }
+
+  flash=Math.max(0,flash-dt);
+  muzzle.visible=flash>0&&gun.visible;
+  muzzle.position.set(
+    .32,
+    weapon?-.25:-.3,
+    weapon?-3.05:-1.5
+  );
+  muzzleLight.position.copy(muzzle.position);
+  muzzleLight.intensity=flash>0?3:0;
+
+  renderer.render(scene,camera);
+}
+
+animate();
+
+window.addEventListener("resize",()=>{
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+
+showPage("home");
+
+</script>
 </body>
 </html>
