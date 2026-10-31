@@ -1,0 +1,36 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Precision Aim Trainer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="hud">
+    <div class="stats">
+      <div>TIME <strong id="timer">60</strong></div>
+      <div>SCORE <strong id="score">0</strong></div>
+      <div>ACCURACY <strong id="accuracy">100%</strong></div>
+    </div>
+    <div id="crosshair">+</div>
+    <div id="hitmarker">HIT!</div>
+  </div>
+
+  <div id="menu">
+    <h1>PRECISION</h1>
+    <p>3D FIRST-PERSON AIM TRAINER</p>
+    <p id="instructions">
+      Move your mouse to aim.<br>
+      Left-click to shoot.<br>
+      Hit as many targets as possible in 60 seconds.
+    </p>
+    <button id="startBtn">START TRAINING</button>
+    <p id="result"></p>
+  </div>
+
+  <script type="module" src="game.js"></script>
+</body>
+</html>
