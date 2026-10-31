@@ -1,9 +1,9 @@
 
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
-// SET UP THE 3D WORLD
+// SCENE
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x141d2e);
+scene.background = new THREE.Color(0x111b2b);
 
 const camera = new THREE.PerspectiveCamera(
   75,
@@ -13,6 +13,7 @@ const camera = new THREE.PerspectiveCamera(
 );
 
 camera.position.set(0, 1.7, 6);
+camera.rotation.order = "YXZ";
 
 const renderer = new THREE.WebGLRenderer({
   antialias: true
@@ -22,47 +23,75 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.body.appendChild(renderer.domElement);
 
-// LIGHTING
-scene.add(new THREE.HemisphereLight(0xffffff, 0x445577, 2));
+// LIGHTS
+scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 2));
 
 const light = new THREE.DirectionalLight(0xffffff, 2);
 light.position.set(5, 10, 5);
 scene.add(light);
 
-// SHOOTING RANGE
-function makeBox(x, y, z, w, h, d, color) {
-  const object = new THREE.Mesh(
+// BUILD THE RANGE
+function box(x, y, z, w, h, d, color) {
+  const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(w, h, d),
     new THREE.MeshStandardMaterial({ color })
   );
-  object.position.set(x, y, z);
-  scene.add(object);
-  return object;
+  mesh.position.set(x, y, z);
+  scene.add(mesh);
+  return mesh;
 }
 
-// Floor, walls, and ceiling
-makeBox(0, -0.2, -3, 24, 0.4, 30, 0x26364b);
-makeBox(0, 6, -3, 24, 0.3, 30, 0x202c3d);
-makeBox(0, 3, -12, 24, 6, 0.4, 0x34465c);
-makeBox(-12, 3, -3, 0.4, 6, 30, 0x28384c);
-makeBox(12, 3, -3, 0.4, 6, 30, 0x28384c);
+box(0, -0.2, -3, 24, 0.4, 30, 0x253549);
+box(0, 6, -3, 24, 0.3, 30, 0x1a2638);
+box(0, 3, -12, 24, 6, 0.4, 0x33465d);
+box(-12, 3, -3, 0.4, 6, 30, 0x28394f);
+box(12, 3, -3, 0.4, 6, 30, 0x28394f);
 
-// Decorations
-for (let i = -5; i <= 5; i++) {
-  makeBox(i * 2, 0.02, -6, 0.06, 0.04, 10, 0x00aacc);
+// FLOOR LINES
+for (let x = -10; x <= 10; x += 2) {
+  box(x, 0.02, -4, 0.035, 0.035, 14, 0x34617a);
 }
 
-// TARGETS
-const targetMaterial = new THREE.MeshStandardMaterial({
-  color: 0xff3344,
-  emissive: 0x660011,
-  roughness: 0.4
-});
+for (let z = -10; z <= 10; z += 2) {
+  box(0, 0.025, z, 22, 0.03, 0.035, 0x34617a);
+}
 
-const target = new THREE.Mesh(
-  new THREE.SphereGeometry(0.42, 32, 32),
-  targetMaterial
+// TARGET
+const target = new THREE.Group();
+
+const outer = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.48, 0.48, 0.12, 40),
+  new THREE.MeshStandardMaterial({
+    color: 0xff3344,
+    emissive: 0x550011
+  })
 );
+
+outer.rotation.x = Math.PI / 2;
+target.add(outer);
+
+const middle = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.29, 0.29, 0.14, 40),
+  new THREE.MeshStandardMaterial({
+    color: 0xffffff
+  })
+);
+
+middle.rotation.x = Math.PI / 2;
+middle.position.z = 0.02;
+target.add(middle);
+
+const bullseye = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.14, 0.14, 0.16, 40),
+  new THREE.MeshStandardMaterial({
+    color: 0xff3344,
+    emissive: 0x770011
+  })
+);
+
+bullseye.rotation.x = Math.PI / 2;
+bullseye.position.z = 0.04;
+target.add(bullseye);
 
 scene.add(target);
 
@@ -76,54 +105,75 @@ function moveTarget() {
 
 moveTarget();
 
-// GAME VARIABLES
+// GAME STATE
 let score = 0;
+let hits = 0;
 let shots = 0;
 let timeLeft = 60;
 let playing = false;
+let paused = false;
 let yaw = 0;
 let pitch = 0;
-let timerInterval = null;
+let countdown = null;
+let hitTimeout = null;
 
 const hud = document.getElementById("hud");
+const crosshair = document.getElementById("crosshair");
 const menu = document.getElementById("menu");
+const title = document.getElementById("menuTitle");
 const startBtn = document.getElementById("startBtn");
 const result = document.getElementById("result");
+const instructions = document.getElementById("instructions");
 const hitmarker = document.getElementById("hitmarker");
 
 const raycaster = new THREE.Raycaster();
 const center = new THREE.Vector2(0, 0);
 
-// START GAME
+function updateHUD() {
+  document.getElementById("timer").textContent = timeLeft;
+  document.getElementById("score").textContent = score;
+  document.getElementById("hits").textContent = hits;
+
+  const accuracy = shots === 0
+    ? 0
+    : Math.round((hits / shots) * 100);
+
+  document.getElementById("accuracy").textContent =
+    accuracy + "%";
+}
+
+function lockMouse() {
+  renderer.domElement.requestPointerLock();
+}
+
+// START
 function startGame() {
+  clearInterval(countdown);
+
   score = 0;
+  hits = 0;
   shots = 0;
   timeLeft = 60;
   yaw = 0;
   pitch = 0;
+  playing = true;
+  paused = false;
 
   camera.rotation.set(0, 0, 0);
   moveTarget();
+  updateHUD();
 
-  document.getElementById("score").textContent = score;
-  document.getElementById("timer").textContent = timeLeft;
-  document.getElementById("accuracy").textContent = "100%";
-
+  hud.style.display = "flex";
+  crosshair.style.display = "block";
   menu.style.display = "none";
-  hud.style.display = "block";
 
-  playing = true;
+  lockMouse();
 
-  renderer.domElement.requestPointerLock();
-
-  clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    if (!playing || document.pointerLockElement !== renderer.domElement) {
-      return;
-    }
+  countdown = setInterval(() => {
+    if (!playing || paused) return;
 
     timeLeft--;
-    document.getElementById("timer").textContent = timeLeft;
+    updateHUD();
 
     if (timeLeft <= 0) {
       endGame();
@@ -131,11 +181,17 @@ function startGame() {
   }, 1000);
 }
 
-startBtn.addEventListener("click", startGame);
+startBtn.addEventListener("click", () => {
+  if (playing && paused) {
+    lockMouse();
+  } else if (!playing) {
+    startGame();
+  }
+});
 
-// MOUSE AIMING
+// LOOK AROUND
 document.addEventListener("mousemove", (event) => {
-  if (!playing) return;
+  if (!playing || paused) return;
   if (document.pointerLockElement !== renderer.domElement) return;
 
   const sensitivity = 0.002;
@@ -143,94 +199,89 @@ document.addEventListener("mousemove", (event) => {
   yaw -= event.movementX * sensitivity;
   pitch -= event.movementY * sensitivity;
 
-  pitch = Math.max(
+  pitch = THREE.MathUtils.clamp(
+    pitch,
     -Math.PI / 2,
-    Math.min(Math.PI / 2, pitch)
+    Math.PI / 2
   );
 
-  camera.rotation.order = "YXZ";
   camera.rotation.y = yaw;
   camera.rotation.x = pitch;
 });
 
-// SHOOTING
+// SHOOT
 document.addEventListener("mousedown", (event) => {
-  if (event.button !== 0 || !playing) return;
+  if (event.button !== 0 || !playing || paused) return;
   if (document.pointerLockElement !== renderer.domElement) return;
 
   shots++;
 
   raycaster.setFromCamera(center, camera);
+  const intersections = raycaster.intersectObject(target, true);
 
-  const hits = raycaster.intersectObject(target);
-
-  if (hits.length > 0) {
+  if (intersections.length > 0) {
+    hits++;
     score += 100;
     moveTarget();
 
     hitmarker.style.opacity = "1";
-    setTimeout(() => {
+    clearTimeout(hitTimeout);
+
+    hitTimeout = setTimeout(() => {
       hitmarker.style.opacity = "0";
-    }, 150);
+    }, 180);
   }
 
-  const accuracy = Math.round(
-    (score / 100 / shots) * 100
-  );
-
-  document.getElementById("score").textContent = score;
-  document.getElementById("accuracy").textContent =
-    accuracy + "%";
+  updateHUD();
 });
 
-// PAUSE WHEN ESC IS PRESSED
+// PAUSE / RESUME
 document.addEventListener("pointerlockchange", () => {
   if (!playing) return;
 
-  if (document.pointerLockElement !== renderer.domElement) {
-    menu.style.display = "flex";
-    document.querySelector("#menu h1").textContent = "PAUSED";
-    startBtn.textContent = "RESUME";
-    result.textContent = "Press Resume to continue.";
-
-    startBtn.onclick = () => {
-      menu.style.display = "none";
-      renderer.domElement.requestPointerLock();
-    };
-  } else {
+  if (document.pointerLockElement === renderer.domElement) {
+    paused = false;
     menu.style.display = "none";
+  } else {
+    paused = true;
+    menu.style.display = "flex";
+    title.textContent = "PAUSED";
+    startBtn.textContent = "RESUME";
+    instructions.style.display = "none";
+    result.textContent = "Press Resume to keep training.";
   }
 });
 
-// END GAME
+// END
 function endGame() {
   playing = false;
-  clearInterval(timerInterval);
+  paused = false;
+  clearInterval(countdown);
 
-  if (document.pointerLockElement) {
+  if (document.pointerLockElement === renderer.domElement) {
     document.exitPointerLock();
   }
 
-  const accuracy = shots > 0
-    ? Math.round((score / 100 / shots) * 100)
-    : 0;
-
-  menu.style.display = "flex";
   hud.style.display = "none";
+  crosshair.style.display = "none";
+  menu.style.display = "flex";
 
-  document.querySelector("#menu h1").textContent =
-    "TRAINING COMPLETE";
+  title.textContent = "TRAINING COMPLETE";
+  instructions.style.display = "none";
+  startBtn.textContent = "PLAY AGAIN";
+
+  const accuracy = shots === 0
+    ? 0
+    : Math.round((hits / shots) * 100);
 
   result.innerHTML =
-    "Score: " + score +
-    "<br>Accuracy: " + accuracy + "%" +
-    "<br>Shots fired: " + shots;
-
-  startBtn.textContent = "PLAY AGAIN";
-  startBtn.onclick = startGame;
+    "SCORE: " + score +
+    "<br>HITS: " + hits +
+    "<br>SHOTS: " + shots +
+    "<br>ACCURACY: " + accuracy + "%";
 }
 
-// RENDER THE GAME
+// ANIMATION
 function animate() {
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
@@ -238,7 +289,7 @@ function animate() {
 
 animate();
 
-// RESPONSIVE WINDOW SIZE
+// RESIZE
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
