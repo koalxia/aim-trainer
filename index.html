@@ -4,33 +4,190 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PRECISION | 3D Aim Trainer</title>
-  <link rel="stylesheet" href="./style.css">
+  <title>PRECISION PRO | Aim Trainer</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="hud">
-    <div class="stat">TIME <strong id="timer">60</strong></div>
-    <div class="stat">SCORE <strong id="score">0</strong></div>
-    <div class="stat">HITS <strong id="hits">0</strong></div>
-    <div class="stat">ACCURACY <strong id="accuracy">0%</strong></div>
+
+<div id="game"></div>
+
+<div id="hud" class="hidden">
+  <div class="hud-logo">P<span>●</span> PRECISION PRO</div>
+
+  <div class="hud-stats">
+    <div>TIME <strong id="time">60</strong></div>
+    <div>SCORE <strong id="score">0</strong></div>
+    <div>ACCURACY <strong id="accuracy">0%</strong></div>
+    <div>HITS <strong id="hits">0 / 0</strong></div>
   </div>
 
   <div id="crosshair"></div>
-  <div id="hitmarker">HIT +100</div>
-
-  <div id="menu">
-    <h1 id="menuTitle">PRECISION</h1>
-    <p>3D FIRST-PERSON AIM TRAINER</p>
-    <div id="instructions">
-      <p>Move your mouse to aim</p>
-      <p>Left-click to shoot targets</p>
-      <p>Hit as many as possible in 60 seconds</p>
-      <p>Press ESC to pause</p>
-    </div>
-    <button id="startBtn">START TRAINING</button>
-    <div id="result"></div>
+  <div id="hitmarker">+100 HIT</div>
+  <div class="hud-bottom">
+    <span id="hudMode">STATIC TARGETS</span>
+    <span>ESC TO PAUSE</span>
   </div>
+</div>
 
-  <script type="module" src="./game.js"></script>
+<div id="overlay">
+  <div class="shell">
+
+    <header>
+      <div class="logo">P<span>●</span> PRECISION <small>PRO</small></div>
+      <div class="status"><i></i> TRAINING SYSTEM ONLINE</div>
+    </header>
+
+    <section id="home" class="screen">
+      <div class="hero">
+        <div class="eyebrow">THE ULTIMATE AIM TRAINING EXPERIENCE</div>
+        <h1>EVERY SHOT<br><em>COUNTS.</em></h1>
+        <p>Train your precision. Master your aim.<br>Become the best shooter.</p>
+
+        <div class="actions">
+          <button class="primary" id="playBtn">START TRAINING <span>↗</span></button>
+          <button class="secondary" id="settingsBtn">⚙ SETTINGS</button>
+        </div>
+
+        <div class="hero-footer">
+          <span>◈ 3 TRAINING MODES</span>
+          <span>◈ FIRST PERSON SHOOTER</span>
+          <span>◈ PRECISION TRAINING</span>
+        </div>
+      </div>
+
+      <div class="hero-art">
+        <div class="ring ring1"></div>
+        <div class="ring ring2"></div>
+        <div class="cross">+</div>
+        <div class="art-label">TARGET ACQUIRED</div>
+      </div>
+    </section>
+
+    <section id="modes" class="screen hidden">
+      <button class="back" id="modeBack">← BACK</button>
+      <div class="eyebrow">SELECT YOUR TRAINING</div>
+      <h2>CHOOSE YOUR <em>DRILL.</em></h2>
+      <p class="subtitle">Select a training mode to begin.</p>
+
+      <div class="mode-grid">
+        <button class="mode-card" data-mode="targets">
+          <small>01 / PRECISION</small>
+          <div class="symbol">◎</div>
+          <h3>STATIC TARGETS</h3>
+          <p>Shoot randomly placed targets. Improve your flick accuracy and reaction time.</p>
+          <div class="mode-footer">AIM TRAINING <span>SELECT ↗</span></div>
+        </button>
+
+        <button class="mode-card" data-mode="dummies">
+          <small>02 / CONTROL</small>
+          <div class="symbol">♟</div>
+          <h3>STATIC DUMMIES</h3>
+          <p>Practice shooting human-shaped training dummies in different positions.</p>
+          <div class="mode-footer">TARGET SWITCHING <span>SELECT ↗</span></div>
+        </button>
+
+        <button class="mode-card" data-mode="moving">
+          <small>03 / TRACKING</small>
+          <div class="symbol">⇆</div>
+          <h3>MOVING DUMMIES</h3>
+          <p>Track moving practice dummies and develop your tracking accuracy.</p>
+          <div class="mode-footer">MOVEMENT TRAINING <span>SELECT ↗</span></div>
+        </button>
+      </div>
+    </section>
+
+    <section id="settings" class="screen hidden">
+      <button class="back" id="settingsBack">← BACK</button>
+      <div class="eyebrow">CUSTOMIZE YOUR EXPERIENCE</div>
+      <h2>GAME <em>SETTINGS.</em></h2>
+      <p class="subtitle">Adjust your training preferences.</p>
+
+      <div class="settings-panel">
+        <div class="setting">
+          <div>
+            <b>MOUSE SENSITIVITY</b>
+            <p>Adjust your aiming speed.</p>
+          </div>
+          <div class="setting-control">
+            <input id="sensitivity" type="range" min="0.5" max="4" step="0.1" value="1.5">
+            <span id="sensitivityValue">1.5</span>
+          </div>
+        </div>
+
+        <div class="setting">
+          <div>
+            <b>SESSION DURATION</b>
+            <p>Choose how long each training session lasts.</p>
+          </div>
+          <select id="duration">
+            <option value="30">30 SECONDS</option>
+            <option value="60" selected>60 SECONDS</option>
+            <option value="120">120 SECONDS</option>
+          </select>
+        </div>
+
+        <div class="setting">
+          <div>
+            <b>CROSSHAIR COLOR</b>
+            <p>Change your crosshair appearance.</p>
+          </div>
+          <select id="crosshairColor">
+            <option value="#c7ff35">LIME GREEN</option>
+            <option value="#ffffff">WHITE</option>
+            <option value="#00e5ff">CYAN</option>
+            <option value="#ff4455">RED</option>
+          </select>
+        </div>
+
+        <div class="setting">
+          <div>
+            <b>SOUND EFFECTS</b>
+            <p>Enable gunshots and hit sounds.</p>
+          </div>
+          <input id="sound" type="checkbox" checked>
+        </div>
+      </div>
+
+      <button class="primary" id="saveSettings">SAVE SETTINGS ✓</button>
+    </section>
+
+    <section id="pause" class="screen hidden centered">
+      <div class="eyebrow">TRAINING INTERRUPTED</div>
+      <h2>PAUSED<span class="lime">.</span></h2>
+      <p class="subtitle">Your training session is paused.</p>
+
+      <div class="vertical-actions">
+        <button class="primary" id="resumeBtn">RESUME GAME ↗</button>
+        <button class="secondary" id="restartBtn">RESTART SESSION</button>
+        <button class="secondary" id="quitBtn">MAIN MENU</button>
+      </div>
+    </section>
+
+    <section id="results" class="screen hidden centered">
+      <div class="eyebrow">SESSION COMPLETE</div>
+      <h2>TRAINING <em>FINISHED.</em></h2>
+      <p id="resultMode">STATIC TARGETS</p>
+
+      <div class="result-grid">
+        <div>FINAL SCORE <strong id="finalScore">0</strong></div>
+        <div>ACCURACY <strong id="finalAccuracy">0%</strong></div>
+        <div>HITS / SHOTS <strong id="finalHits">0 / 0</strong></div>
+      </div>
+
+      <div class="vertical-actions">
+        <button class="primary" id="againBtn">TRAIN AGAIN ↗</button>
+        <button class="secondary" id="homeBtn">MAIN MENU</button>
+      </div>
+    </section>
+
+    <footer>
+      <span>PRECISION PRO // BUILT FOR BETTER AIM</span>
+      <span>WASD MOVE · MOUSE AIM · CLICK SHOOT</span>
+    </footer>
+
+  </div>
+</div>
+
+<script type="module" src="game.js"></script>
 </body>
 </html>
